@@ -1,7 +1,7 @@
 {
   "db": {
     "address": "localhost",
-    "database": "log_voyage",
+    "database": "logvoyage",
     "user": "postgres",
     "password": "postgres",
     "port": "5432"
