@@ -23,14 +23,6 @@ func NewConnection() *pg.DB {
 		Password: config.Get("db.password"),
 		Database: config.Get("db.database"),
 	})
-	conn.OnQueryProcessed(func(event *pg.QueryProcessedEvent) {
-		query, err := event.FormattedQuery()
-		if err != nil {
-			log.Println("Query error:", err)
-		}
-
-		log.Printf("%s %s", time.Since(event.StartTime), query)
-	})
 
 	return conn
 }
@@ -38,4 +30,16 @@ func NewConnection() *pg.DB {
 // GetConnection returns database connection instance
 func GetConnection() *pg.DB {
 	return db
+}
+
+// EnableSQLLogging enables detailed sql logging to stdout
+func EnableSQLLogging() {
+	db.OnQueryProcessed(func(event *pg.QueryProcessedEvent) {
+		query, err := event.FormattedQuery()
+		if err != nil {
+			log.Println("Query error:", err)
+		}
+
+		log.Printf("%s %s", time.Since(event.StartTime), query)
+	})
 }

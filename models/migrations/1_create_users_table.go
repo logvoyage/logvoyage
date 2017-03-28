@@ -1,9 +1,9 @@
-package main
+package migrations
 
 import (
 	"fmt"
 
-	"github.com/go-pg/migrations"
+	"github.com/firstrow/migrations"
 )
 
 func init() {
