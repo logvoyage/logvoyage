@@ -9,8 +9,14 @@ import (
 
 var config = viper.New()
 
+// const (
+// 	MODE_DEV  = "dev"
+// 	MODE_PROD = "prod"
+// 	MODE_TEST = "test"
+// )
+
 // Get config value.
-// Env variable LV_DB_HOST will be accessible as Get("db.host")
+// Env variable LV_DB_HOST can be accessible as Get("db.host")
 // See viper docs for more info.
 func Get(key string) string {
 	return config.GetString(key)
@@ -18,11 +24,11 @@ func Get(key string) string {
 
 func init() {
 	config.SetEnvPrefix("LV")
+	config.AutomaticEnv()
 	config.SetConfigType("json")
 	config.AddConfigPath("$HOME/.logvoyage")
 	config.AddConfigPath(".")
 	config.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	config.AutomaticEnv()
 
 	err := config.ReadInConfig()
 	if err != nil {
