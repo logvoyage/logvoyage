@@ -28,7 +28,4 @@ func init() {
 	if err != nil {
 		panic(fmt.Errorf("fatal error config file: %s", err))
 	}
-
-	fmt.Println("DB:", Get("db.address"))
-	fmt.Println("DB:", Get("db.port"))
 }
