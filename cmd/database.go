@@ -6,6 +6,7 @@ import (
 
 	"bitbucket.org/firstrow/logvoyage/models/migrations"
 	"bitbucket.org/firstrow/logvoyage/shared/config"
+
 	"github.com/go-pg/pg"
 	"github.com/spf13/cobra"
 )
