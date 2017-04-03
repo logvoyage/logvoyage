@@ -31,7 +31,7 @@ func (r Response) Panic(ctx *iris.Context, err error) {
 	ctx.JSON(503, err.Error())
 }
 
-func main() {
+func init() {
 	response = Response{}
 
 	app = iris.New()
@@ -41,7 +41,10 @@ func main() {
 	userAPI := app.Party("/users")
 	{
 		userAPI.Post("/", UsersCreate)
+		userAPI.Post("/login", UsersLogin)
 	}
+}
 
+func main() {
 	app.Listen("127.0.0.1:3000")
 }

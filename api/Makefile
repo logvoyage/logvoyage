@@ -14,6 +14,6 @@ $(APP): $(GO_FILES)
 restart: kill before $(APP)
 	@./api & echo $$! > $(PID)
 test:
-	@LV_MODE=test go test
+	@LV_MODE=test go test -v
 
 .PHONY: serve restart kill before # let's go to reserve rules names
