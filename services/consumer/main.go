@@ -48,7 +48,6 @@ func failOnError(err error, msg string) {
 }
 
 func main() {
-	// TODO: Use etcd configuration server
 	amqpConn, err := amqp.Dial("amqp://guest:guest@ubuntu:5672")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer amqpConn.Close()
