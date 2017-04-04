@@ -109,13 +109,33 @@ func handle(deliveries <-chan amqp.Delivery) {
 			d.DeliveryTag,
 			d.Body,
 		)
+
+		d.Ack(false)
+
+		// projectUUID, tag, msg, err := processMessage(string(d.Body))
+
+		// if err != nil {
+		// 	log.Println("Error processing message:", err)
+		// 	continue
+		// }
+
+		// // TODO: Cache project in mem
+		// project, err := models.FindProjectByUUID(projectUUID)
+
+		// if err != nil {
+		// 	log.Println("Project not found:", err)
+		// 	continue
+		// }
+
+		// sendToElastic(project.GetLogsElasticSearchIndexName(), tag, msg)
+		// sendToStorage(...)
+
 		// + Extract API key and tag
 		// Check if API key exists and store keys in mem
 		// Add message to bulk storage. Bulk storage per index?
 		// Bulk storage pushes messages to elastic each 2 seconds
 		// Send message to persistent storage
 		// handle errors
-		d.Ack(false)
 	}
 	log.Fatalln("Deliveries channel closed")
 }

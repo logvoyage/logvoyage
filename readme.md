@@ -1,4 +1,5 @@
 # LogVoyage
+Open Source Log, Exception, Metrics management.
 
 ## Installation
 ```
