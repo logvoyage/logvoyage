@@ -1,9 +1,14 @@
 package main
 
 import (
+	"time"
+
 	"bitbucket.org/firstrow/logvoyage/models"
+	"bitbucket.org/firstrow/logvoyage/shared/config"
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
+	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/kataras/iris.v6"
 )
 
@@ -62,6 +67,35 @@ func UsersCreate(ctx *iris.Context) {
 }
 
 func UsersLogin(ctx *iris.Context) {
-	// exists, err := models.EmailExists(data.Email)
-	// https://github.com/dgrijalva/jwt-go
+	var data userData
+	ctx.ReadJSON(&data)
+
+	user, err := models.FindUserByEmail(data.Email)
+
+	if err != nil {
+		response.Error(ctx, "User not found")
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password))
+
+	if err != nil {
+		response.Error(ctx, "User not found")
+		return
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":        user.Id,
+		"timestamp": time.Now().UTC().Unix(),
+	})
+
+	secret := []byte(config.Get("secret"))
+	tokenString, err := token.SignedString(secret)
+
+	if err != nil {
+		response.Panic(ctx, err)
+		return
+	}
+
+	response.Success(ctx, map[string]string{"token": tokenString})
 }

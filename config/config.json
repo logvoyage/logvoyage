@@ -1,4 +1,5 @@
 {
+  "secret": "random-secret-code",
   "db": {
     "address": "localhost",
     "database": "logvoyage",

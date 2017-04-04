@@ -2,6 +2,8 @@ package models
 
 import (
 	"errors"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -36,7 +38,12 @@ func CreateUser(email, name, password string) error {
 	user := &User{
 		Email:    email,
 		Name:     name,
-		Password: password,
+		Password: HashPlainPassword(password),
 	}
 	return db.Insert(user)
+}
+
+func HashPlainPassword(password string) string {
+	b, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(b)
 }

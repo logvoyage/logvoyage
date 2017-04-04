@@ -13,9 +13,14 @@ var (
 type Response struct {
 }
 
-// Success responses with 200 code
-func (r Response) Success(ctx *iris.Context, data ...interface{}) {
-	ctx.JSON(200, map[string]bool{"success": true})
+// Success responses with 200 code.
+// Note: only fist body argument will be passed to the response.
+func (r Response) Success(ctx *iris.Context, body ...interface{}) {
+	if len(body) > 0 {
+		ctx.JSON(200, map[string]interface{}{"success": true, "body": body[0]})
+	} else {
+		ctx.JSON(200, map[string]interface{}{"success": true})
+	}
 }
 
 // Error returns 200 OK response with json field "errors" with error descrioption.
@@ -28,7 +33,8 @@ func (r Response) Error(ctx *iris.Context, err interface{}) {
 
 // Panic responses with 503 error.
 func (r Response) Panic(ctx *iris.Context, err error) {
-	ctx.JSON(503, err.Error())
+	// TODO: Send orignal error to issue tracker.
+	ctx.JSON(503, map[string]interface{}{"errors": err.Error()})
 }
 
 func init() {
