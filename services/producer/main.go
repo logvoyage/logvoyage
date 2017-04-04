@@ -1,5 +1,5 @@
 // Producer accepts logs from various sources and sends them to queue.
-// The main task of this serivce - to be up and running 100% of time and run fast.
+// The main task of this service - to be up and running 100% of time and run fast.
 // Validation and other things should be done by background workers.
 package main
 
@@ -73,7 +73,7 @@ func startHttpHandler() {
 	}
 }
 
-func startTcpHandler() {
+func startTCPHandler() {
 	tcp := tcp_server.New("localhost:28000")
 
 	tcp.OnNewClient(func(c *tcp_server.Client) {
@@ -90,7 +90,7 @@ func startTcpHandler() {
 	tcp.Listen()
 }
 
-func startUdpHandler() {
+func startUDPHandler() {
 	updAddr, err := net.ResolveUDPAddr("udp", ":29000")
 	failOnError(err, "Error resolving UDP address")
 
@@ -148,7 +148,7 @@ func main() {
 	failOnError(err, "Failed to declare a queue")
 
 	go startHttpHandler()
-	go startTcpHandler()
-	go startUdpHandler()
+	go startTCPHandler()
+	go startUDPHandler()
 	select {}
 }
