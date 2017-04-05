@@ -78,8 +78,8 @@ func UsersLogin(ctx *iris.Context) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": user.Id,
-		"nbf":     time.Date(2014, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
+		"user_id":   user.Id,
+		"timestamp": time.Now().UTC().Unix(),
 	})
 
 	secret := []byte(config.Get("secret"))
