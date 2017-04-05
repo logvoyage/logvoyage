@@ -26,13 +26,6 @@ func (u userData) Validate() error {
 	)
 }
 
-func (u userData) ValidateLogin() error {
-	return validation.ValidateStruct(&u,
-		validation.Field(&u.Email, validation.Required, is.Email),
-		validation.Field(&u.Password, validation.Required, validation.Length(5, 255)),
-	)
-}
-
 func UsersCreate(ctx *iris.Context) {
 	var data userData
 	ctx.ReadJSON(&data)
@@ -85,8 +78,8 @@ func UsersLogin(ctx *iris.Context) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":        user.Id,
-		"timestamp": time.Now().UTC().Unix(),
+		"user_id": user.Id,
+		"nbf":     time.Date(2014, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
 	})
 
 	secret := []byte(config.Get("secret"))

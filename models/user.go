@@ -7,7 +7,7 @@ import (
 )
 
 type User struct {
-	Id       int
+	Id       int64
 	Email    string
 	Name     string
 	Password string
@@ -20,6 +20,15 @@ var (
 func FindUserByEmail(email string) (*User, error) {
 	var user User
 	err := db.Model(&user).Where("email = ?", email).Select(&user)
+	if err != nil {
+		return nil, ErrorUserNotFound
+	}
+	return &user, nil
+}
+
+func FindUserById(id interface{}) (*User, error) {
+	var user User
+	err := db.Model(&user).Where("id = ?", id).Select(&user)
 	if err != nil {
 		return nil, ErrorUserNotFound
 	}

@@ -1,6 +1,12 @@
 package main
 
 import (
+	"log"
+
+	"bitbucket.org/firstrow/logvoyage/models"
+	"bitbucket.org/firstrow/logvoyage/shared/config"
+
+	jwt "github.com/dgrijalva/jwt-go"
 	"gopkg.in/kataras/iris.v6"
 	"gopkg.in/kataras/iris.v6/adaptors/httprouter"
 )
@@ -37,6 +43,43 @@ func (r Response) Panic(ctx *iris.Context, err error) {
 	ctx.JSON(503, map[string]interface{}{"errors": err.Error()})
 }
 
+// Forbidden responses with 401 code, means user does not valid credentials to access handler.
+func (r Response) Forbidden(ctx *iris.Context) {
+	ctx.StopExecution()
+	ctx.JSON(401, map[string]string{"errors": "Authentication failed"})
+}
+
+// authMiddleware performs authentication
+func authMiddleware(ctx *iris.Context) {
+	tokenString := ctx.RequestHeader("Authentication")
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			log.Printf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(config.Get("secret")), nil
+	})
+
+	if err != nil {
+		response.Forbidden(ctx)
+		return
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		user, err := models.FindUserById(claims["user_id"])
+		if err != nil {
+			response.Forbidden(ctx)
+			return
+		}
+		ctx.Set("user", user)
+	} else {
+		response.Forbidden(ctx)
+		return
+	}
+
+	ctx.Next()
+}
+
 func init() {
 	response = Response{}
 
@@ -48,6 +91,12 @@ func init() {
 	{
 		userAPI.Post("/", UsersCreate)
 		userAPI.Post("/login", UsersLogin)
+	}
+
+	projectAPI := app.Party("/projects", authMiddleware)
+	{
+		projectAPI.Post("/", ProjectsCreate)
+		projectAPI.Get("/", ProjectsList)
 	}
 }
 

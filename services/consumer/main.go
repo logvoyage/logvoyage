@@ -4,10 +4,12 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"regexp"
 	"strings"
 
+	"bitbucket.org/firstrow/logvoyage/models"
 	"github.com/streadway/amqp"
 )
 
@@ -112,20 +114,22 @@ func handle(deliveries <-chan amqp.Delivery) {
 
 		d.Ack(false)
 
-		// projectUUID, tag, msg, err := processMessage(string(d.Body))
+		projectUUID, _, _, err := processMessage(string(d.Body))
 
-		// if err != nil {
-		// 	log.Println("Error processing message:", err)
-		// 	continue
-		// }
+		if err != nil {
+			log.Println("Error processing message:", err)
+			continue
+		}
 
-		// // TODO: Cache project in mem
-		// project, err := models.FindProjectByUUID(projectUUID)
+		// TODO: Cache project in mem
+		project, err := models.FindProjectByUUID(projectUUID)
 
-		// if err != nil {
-		// 	log.Println("Project not found:", err)
-		// 	continue
-		// }
+		if err != nil {
+			log.Println("Project not found:", err)
+			continue
+		}
+
+		fmt.Println(project)
 
 		// sendToElastic(project.GetLogsElasticSearchIndexName(), tag, msg)
 		// sendToStorage(...)

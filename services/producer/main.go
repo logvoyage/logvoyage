@@ -109,7 +109,7 @@ func startUDPHandler() {
 }
 
 // sendToQueue sends data to queue or if it is down - to fallback queue
-// body should be an array of bytes. First N bytes should be user api key
+// body should be an array of bytes. First N bytes should be project uuid.
 func sendToQueue(body []byte) {
 	err := channel.Publish(
 		"logs", // exchange
