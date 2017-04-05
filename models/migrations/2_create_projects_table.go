@@ -15,7 +15,7 @@ func init() {
 		    name VARCHAR (255),
 		    uuid VARCHAR (36),
 		    owner_id INTEGER,
-		    created_on timestamp default current_timestamp
+		    created_at timestamp default current_timestamp
 		  );`)
 		if err != nil {
 			return err

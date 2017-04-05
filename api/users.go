@@ -5,6 +5,7 @@ import (
 
 	"bitbucket.org/firstrow/logvoyage/models"
 	"bitbucket.org/firstrow/logvoyage/shared/config"
+
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"

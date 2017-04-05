@@ -15,7 +15,7 @@ func init() {
 		    email VARCHAR (255) UNIQUE NOT NULL,
 		    name VARCHAR (255),
 		    password VARCHAR (255),
-		    created_on timestamp default current_timestamp
+		    created_at timestamp default current_timestamp
 		  );`)
 		return err
 	}, func(db migrations.DB) error {

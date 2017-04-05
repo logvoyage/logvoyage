@@ -19,7 +19,7 @@ var (
 
 func FindUserByEmail(email string) (*User, error) {
 	var user User
-	err := db.Model(&user).Where("email = ?", email).Select(&user)
+	err := db.Model(&user).Where("email = ?", email).Select()
 	if err != nil {
 		return nil, ErrorUserNotFound
 	}
@@ -28,7 +28,7 @@ func FindUserByEmail(email string) (*User, error) {
 
 func FindUserById(id interface{}) (*User, error) {
 	var user User
-	err := db.Model(&user).Where("id = ?", id).Select(&user)
+	err := db.Model(&user).Where("id = ?", id).Select()
 	if err != nil {
 		return nil, ErrorUserNotFound
 	}
