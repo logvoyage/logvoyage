@@ -129,7 +129,7 @@ func handle(deliveries <-chan amqp.Delivery) {
 			continue
 		}
 
-		fmt.Println(project)
+		fmt.Println("Selected project: ", project)
 
 		// sendToElastic(project.GetLogsElasticSearchIndexName(), tag, msg)
 		// sendToStorage(...)

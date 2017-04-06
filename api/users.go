@@ -79,7 +79,7 @@ func UsersLogin(ctx *iris.Context) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id":   user.Id,
+		"user_id":   user.ID,
 		"timestamp": time.Now().UTC().Unix(),
 	})
 

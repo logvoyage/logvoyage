@@ -22,7 +22,7 @@ func CreateProject(name string, u *User) (*Project, error) {
 	p := &Project{
 		Name:    name,
 		UUID:    uuid.NewV4().String(),
-		OwnerID: u.Id,
+		OwnerID: u.ID,
 	}
 	err := db.Insert(p)
 	if err != nil {
@@ -42,7 +42,7 @@ func FindProjectByUUID(uuid string) (*Project, error) {
 
 func FindAllProjectsByUser(u *User) ([]Project, error) {
 	var p []Project
-	err := db.Model(&p).Where("owner_id = ?", u.Id).Select(&p)
+	err := db.Model(&p).Where("owner_id = ?", u.ID).Select(&p)
 	if err != nil {
 		return nil, err
 	}

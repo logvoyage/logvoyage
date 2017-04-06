@@ -15,7 +15,6 @@ func (p projectData) Validate() error {
 	return validation.ValidateStruct(&p,
 		validation.Field(&p.Name, validation.Required, validation.Length(1, 255)),
 	)
-
 }
 
 // ProjectsCreate creates new project and generates its uuid.
