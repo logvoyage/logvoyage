@@ -8,7 +8,7 @@ import (
 )
 
 type projectData struct {
-	Name string `json:"name"`
+	Name string
 }
 
 func (p projectData) Validate() error {
@@ -18,6 +18,7 @@ func (p projectData) Validate() error {
 
 }
 
+// ProjectsCreate creates new project and generates its uuid.
 func ProjectsCreate(ctx *iris.Context) {
 	var data projectData
 	ctx.ReadJSON(&data)
@@ -39,6 +40,8 @@ func ProjectsCreate(ctx *iris.Context) {
 	response.Success(ctx, project)
 }
 
+// ProjectsList displays list of user owned projects and projects where
+// user is invited.
 func ProjectsList(ctx *iris.Context) {
 	user := ctx.Get("user").(*models.User)
 	projects, err := models.FindAllProjectsByUser(user)
