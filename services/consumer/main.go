@@ -4,20 +4,73 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"regexp"
 	"strings"
+	"sync"
+	"time"
 
 	"bitbucket.org/firstrow/logvoyage/models"
 	"github.com/streadway/amqp"
 )
 
-// See https://regex101.com/r/sQskdz/1
-var msgRegExp = regexp.MustCompile(`^([a-z0-9]{8}-[a-z0-9]{4}-[1-5][a-z0-9]{3}-[a-z0-9]{4}-[a-z0-9]{12})(@([a-zA-Z0-9\_\-\.]{1,20}))?\s*(.*)`)
+const (
+	// Default tag name name in case tag does not specified in source message.
+	defaultTag = "default"
+	// How often in seconds send messages to storge.
+	persistTimeout = 2
+)
 
-// Default tag name name in case tag does not specified in source message.
-const defaultTag = "default"
+var (
+	storage = newInMemStorage()
+	// See https://regex101.com/r/sQskdz/1
+	msgRegExp = regexp.MustCompile(`^([a-z0-9]{8}-[a-z0-9]{4}-[1-5][a-z0-9]{3}-[a-z0-9]{4}-[a-z0-9]{12})(@([a-zA-Z0-9\_\-\.]{1,20}))?\s*(.*)`)
+)
+
+type message struct {
+	ProjectUUID string
+	Tag         string
+	Source      string
+	Datetime    time.Time
+}
+
+// inMemStorage stores all received valid message in memory.
+// Each N seconds messages will be sent to ES via bulk request.
+type inMemStorage struct {
+	sync.Mutex
+	messages []message
+}
+
+func newInMemStorage() *inMemStorage {
+	s := &inMemStorage{}
+	go s.startTimer()
+	return s
+}
+
+func (s *inMemStorage) Add(msg message) {
+	s.Lock()
+	s.messages = append(s.messages, msg)
+	s.Unlock()
+}
+
+func (s *inMemStorage) Persist() {
+	s.Lock()
+	defer s.Unlock()
+	if len(s.messages) == 0 {
+		return
+	}
+	tmp := make([]message, len(s.messages))
+	copy(s.messages, tmp)
+}
+
+func (s *inMemStorage) startTimer() {
+	ticker := time.NewTicker(persistTimeout * time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		s.Persist()
+	}
+}
 
 // processMessage extracts apiKey, tag(optional) and source message from log line.
 // In case tag not found, "default" tag will be returned.
@@ -100,6 +153,7 @@ func main() {
 
 	// TODO: Handle close method. See example consumer.
 	go handle(deliveries)
+
 	select {}
 }
 
@@ -111,35 +165,32 @@ func handle(deliveries <-chan amqp.Delivery) {
 			d.DeliveryTag,
 			d.Body,
 		)
-
-		d.Ack(false)
-
-		projectUUID, _, _, err := processMessage(string(d.Body))
-
-		if err != nil {
-			log.Println("Error processing message:", err)
-			continue
-		}
-
-		// TODO: Cache project in mem
-		project, err := models.FindProjectByUUID(projectUUID)
-
-		if err != nil {
-			log.Println("Project not found:", err)
-			continue
-		}
-
-		fmt.Println("Selected project: ", project)
-
-		// sendToElastic(project.GetLogsElasticSearchIndexName(), tag, msg)
-		// sendToStorage(...)
-
-		// + Extract API key and tag
-		// Check if API key exists and store keys in mem
-		// Add message to bulk storage. Bulk storage per index?
-		// Bulk storage pushes messages to elastic each 2 seconds
-		// Send message to persistent storage
-		// handle errors
+		processDelivery(d)
 	}
 	log.Fatalln("Deliveries channel closed")
+}
+
+func processDelivery(d amqp.Delivery) {
+	defer d.Ack(false)
+
+	projectUUID, tag, msgSource, err := processMessage(string(d.Body))
+
+	if err != nil {
+		log.Println("Error processing message:", err)
+		return
+	}
+
+	// TODO: Cache project in mem
+	project, err := models.FindProjectByUUID(projectUUID)
+
+	if err != nil {
+		log.Println("Project not found")
+		return
+	}
+
+	storage.Add(message{
+		ProjectUUID: project.UUID,
+		Tag:         tag,
+		Source:      msgSource,
+	})
 }
