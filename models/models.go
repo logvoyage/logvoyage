@@ -3,43 +3,38 @@ package models
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"bitbucket.org/firstrow/logvoyage/shared/config"
-	"github.com/go-pg/pg"
+
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-var db *pg.DB
+var db *gorm.DB
 
 func init() {
 	db = NewConnection()
 }
 
 // NewConnection creates new database connection
-func NewConnection() *pg.DB {
-	conn := pg.Connect(&pg.Options{
-		Addr:     fmt.Sprintf("%s:%s", config.Get("db.address"), config.Get("db.port")),
-		User:     config.Get("db.user"),
-		Password: config.Get("db.password"),
-		Database: config.Get("db.database"),
-	})
-
-	return conn
-}
-
-// GetConnection returns database connection instance
-func GetConnection() *pg.DB {
+func NewConnection() *gorm.DB {
+	dsn := fmt.Sprintf(
+		"host=%s port=%s user=%s dbname=%s sslmode=%s password=%s",
+		config.Get("db.address"),
+		config.Get("db.port"),
+		config.Get("db.user"),
+		config.Get("db.database"),
+		config.Get("db.sslmode"),
+		config.Get("db.password"),
+	)
+	db, err := gorm.Open("postgres", dsn)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return db
 }
 
-// EnableSQLLogging enables detailed sql logging to stdout
-func EnableSQLLogging() {
-	db.OnQueryProcessed(func(event *pg.QueryProcessedEvent) {
-		query, err := event.FormattedQuery()
-		if err != nil {
-			log.Println("Query error:", err)
-		}
-
-		log.Printf("%s %s", time.Since(event.StartTime), query)
-	})
+// GetConnection returns database connection instance
+func GetConnection() *gorm.DB {
+	return db
 }

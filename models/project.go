@@ -3,15 +3,15 @@ package models
 import (
 	"errors"
 
+	"github.com/jinzhu/gorm"
 	"github.com/satori/go.uuid"
 )
 
 type Project struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	UUID      string `json:"uuid"`
-	OwnerID   int64  `json:"owner_id"`
-	CreatedAt string `json:"created_at"`
+	gorm.Model
+	Name    string `json:"name"`
+	UUID    string `json:"uuid"`
+	OwnerID uint   `json:"owner_id"`
 }
 
 var (
@@ -24,17 +24,20 @@ func CreateProject(name string, u *User) (*Project, error) {
 		UUID:    uuid.NewV4().String(),
 		OwnerID: u.ID,
 	}
-	err := db.Insert(p)
-	if err != nil {
-		return nil, err
+	res := db.Create(p)
+	if res.Error != nil {
+		return nil, res.Error
 	}
 	return p, nil
 }
 
 func FindProjectByUUID(uuid string) (*Project, error) {
 	var p Project
-	err := db.Model(&p).Where("uuid = ?", uuid).Select()
-	if err != nil {
+	res := db.Where("uuid = ?", uuid).First(&p)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RecordNotFound() {
 		return nil, ErrorProjectNotFound
 	}
 	return &p, nil
@@ -42,9 +45,9 @@ func FindProjectByUUID(uuid string) (*Project, error) {
 
 func FindAllProjectsByUser(u *User) ([]Project, error) {
 	var p []Project
-	err := db.Model(&p).Where("owner_id = ?", u.ID).Select(&p)
-	if err != nil {
-		return nil, err
+	res := db.Where("owner_id = ?", u.ID).Find(p)
+	if res.Error != nil {
+		return nil, res.Error
 	}
 	return p, nil
 }

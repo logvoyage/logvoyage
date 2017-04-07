@@ -5,6 +5,7 @@
     "database": "logvoyage",
     "user": "postgres",
     "password": "postgres",
-    "port": "5432"
+    "port": "5432",
+    "sslmode": "disable"
   }
 }

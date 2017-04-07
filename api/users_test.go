@@ -25,10 +25,10 @@ func TestSuccessUsersCreate(t *testing.T) {
 func TestSuccessUsersLogin(t *testing.T) {
 	models.GetConnection().Exec("DELETE FROM users")
 
-	err := models.CreateUser("tester@example.com", "tester", "password")
+	_, err := models.CreateUser("tester@example.com", "tester", "password")
 
 	if err != nil {
-		t.Error("Create user error")
+		t.Error("Create user error", err)
 	}
 
 	e := httptest.New(app, t)

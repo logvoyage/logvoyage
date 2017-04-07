@@ -3,11 +3,12 @@ package models
 import (
 	"errors"
 
+	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-	ID       int64
+	gorm.Model
 	Email    string
 	Name     string
 	Password string
@@ -19,8 +20,11 @@ var (
 
 func FindUserByEmail(email string) (*User, error) {
 	var user User
-	err := db.Model(&user).Where("email = ?", email).Select()
-	if err != nil {
+	res := db.Where("email = ?", email).First(&user)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RecordNotFound() {
 		return nil, ErrorUserNotFound
 	}
 	return &user, nil
@@ -28,28 +32,39 @@ func FindUserByEmail(email string) (*User, error) {
 
 func FindUserById(id interface{}) (*User, error) {
 	var user User
-	err := db.Model(&user).Where("id = ?", id).Select()
-	if err != nil {
+	res := db.Where("id = ?", id).First(&user)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RecordNotFound() {
 		return nil, ErrorUserNotFound
 	}
 	return &user, nil
 }
 
 func EmailExists(email string) (bool, error) {
-	c, err := db.Model(&User{}).Where("email = ?", email).Count()
-	if err != nil {
-		return false, err
+	count := 0
+	res := db.Where("email = ?", email).Count(&count)
+	if res.Error != nil {
+		return false, res.Error
 	}
-	return c > 0, nil
+	if count > 0 {
+		return true, nil
+	}
+	return false, nil
 }
 
-func CreateUser(email, name, password string) error {
+func CreateUser(email, name, password string) (*User, error) {
 	user := &User{
 		Email:    email,
 		Name:     name,
 		Password: HashPlainPassword(password),
 	}
-	return db.Insert(user)
+	res := db.Create(user)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return user, nil
 }
 
 func HashPlainPassword(password string) string {

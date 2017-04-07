@@ -50,7 +50,7 @@ func UsersCreate(ctx *iris.Context) {
 		return
 	}
 
-	err = models.CreateUser(data.Email, data.Name, data.Password)
+	_, err = models.CreateUser(data.Email, data.Name, data.Password)
 
 	if err != nil {
 		response.Panic(ctx, err)
