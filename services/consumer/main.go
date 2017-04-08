@@ -3,7 +3,10 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"regexp"
 	"strings"
@@ -12,6 +15,7 @@ import (
 
 	"bitbucket.org/firstrow/logvoyage/models"
 	"github.com/streadway/amqp"
+	"gopkg.in/olivere/elastic.v5"
 )
 
 const (
@@ -31,7 +35,12 @@ type message struct {
 	ProjectUUID string
 	Tag         string
 	Source      string
-	Datetime    time.Time
+	Datetime    int64
+}
+
+type doc struct {
+	Source   string
+	Datetime int64
 }
 
 // inMemStorage stores all received valid message in memory.
@@ -54,13 +63,49 @@ func (s *inMemStorage) Add(msg message) {
 }
 
 func (s *inMemStorage) Persist() {
+
+	// TODO: Handle error
+	client, err := elasticClient()
+	if err != nil {
+		log.Println("Error connecting to elastic:", err)
+		return
+	}
+
 	s.Lock()
 	defer s.Unlock()
 	if len(s.messages) == 0 {
 		return
 	}
-	tmp := make([]message, len(s.messages))
-	copy(s.messages, tmp)
+
+	bulkRequest := client.Bulk()
+	for _, msg := range s.messages {
+		req := elastic.NewBulkIndexRequest().Index("logs-" + msg.ProjectUUID).Type(msg.Tag)
+		var userJson map[string]interface{}
+		err := json.Unmarshal([]byte(msg.Source), &userJson)
+
+		if err != nil {
+			doc := doc{
+				Source:   msg.Source,
+				Datetime: msg.Datetime,
+			}
+			req.Doc(doc)
+		} else {
+			// Save user json
+			fmt.Println("Save user json:", userJson)
+			userJson["Datetime"] = msg.Datetime
+			req.Doc(userJson)
+		}
+		bulkRequest.Add(req)
+	}
+
+	bulkResponse, err := bulkRequest.Do(context.TODO())
+	if err != nil {
+		log.Println("Bulk request err:", err)
+	}
+	if bulkResponse == nil {
+		log.Println("Bulk response == nil")
+	}
+	s.messages = []message{}
 }
 
 func (s *inMemStorage) startTimer() {
@@ -70,6 +115,10 @@ func (s *inMemStorage) startTimer() {
 	for range ticker.C {
 		s.Persist()
 	}
+}
+
+func elasticClient() (*elastic.Client, error) {
+	return elastic.NewClient(elastic.SetURL("http://ubuntu:9200"))
 }
 
 // processMessage extracts apiKey, tag(optional) and source message from log line.
@@ -100,6 +149,45 @@ func failOnError(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s: %s", msg, err)
 	}
+}
+
+func handle(deliveries <-chan amqp.Delivery) {
+	for d := range deliveries {
+		log.Printf(
+			"got %dB delivery: [%v] %q",
+			len(d.Body),
+			d.DeliveryTag,
+			d.Body,
+		)
+		processDelivery(d)
+	}
+	log.Fatalln("Deliveries channel closed")
+}
+
+func processDelivery(d amqp.Delivery) {
+	defer d.Ack(false)
+
+	projectUUID, tag, msgSource, err := processMessage(string(d.Body))
+
+	if err != nil {
+		log.Println("Error processing message:", err)
+		return
+	}
+
+	// TODO: Cache project in mem
+	project, err := models.FindProjectByUUID(projectUUID)
+
+	if err != nil {
+		log.Println("Project not found")
+		return
+	}
+
+	storage.Add(message{
+		ProjectUUID: project.UUID,
+		Tag:         tag,
+		Source:      msgSource,
+		Datetime:    time.Now().UTC().Unix(),
+	})
 }
 
 func main() {
@@ -155,42 +243,4 @@ func main() {
 	go handle(deliveries)
 
 	select {}
-}
-
-func handle(deliveries <-chan amqp.Delivery) {
-	for d := range deliveries {
-		log.Printf(
-			"got %dB delivery: [%v] %q",
-			len(d.Body),
-			d.DeliveryTag,
-			d.Body,
-		)
-		processDelivery(d)
-	}
-	log.Fatalln("Deliveries channel closed")
-}
-
-func processDelivery(d amqp.Delivery) {
-	defer d.Ack(false)
-
-	projectUUID, tag, msgSource, err := processMessage(string(d.Body))
-
-	if err != nil {
-		log.Println("Error processing message:", err)
-		return
-	}
-
-	// TODO: Cache project in mem
-	project, err := models.FindProjectByUUID(projectUUID)
-
-	if err != nil {
-		log.Println("Project not found")
-		return
-	}
-
-	storage.Add(message{
-		ProjectUUID: project.UUID,
-		Tag:         tag,
-		Source:      msgSource,
-	})
 }
