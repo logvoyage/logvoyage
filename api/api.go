@@ -66,11 +66,17 @@ func authMiddleware(ctx *iris.Context) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		user, err := models.FindUserById(claims["user_id"])
-		if err != nil {
-			response.Forbidden(ctx)
+		user, res := models.FindUserByID(claims["user_id"])
+
+		if res.Error != nil {
+			if res.RecordNotFound() {
+				response.Forbidden(ctx)
+			} else {
+				response.Error(ctx, "User not found")
+			}
 			return
 		}
+
 		ctx.Set("user", user)
 	} else {
 		response.Forbidden(ctx)

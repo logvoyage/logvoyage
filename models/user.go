@@ -18,53 +18,33 @@ var (
 	ErrorUserNotFound = errors.New("User not found")
 )
 
-func FindUserByEmail(email string) (*User, error) {
+// FindUserByEmail sdfs df
+func FindUserByEmail(email string) (*User, *gorm.DB) {
 	var user User
 	res := db.Model(&user).Where("email = ?", email).First(&user)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-	if res.RecordNotFound() {
-		return nil, ErrorUserNotFound
-	}
-	return &user, nil
+	return &user, res
 }
 
-func FindUserById(id interface{}) (*User, error) {
+func FindUserByID(id interface{}) (*User, *gorm.DB) {
 	var user User
 	res := db.Model(&user).Where("id = ?", id).First(&user)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-	if res.RecordNotFound() {
-		return nil, ErrorUserNotFound
-	}
-	return &user, nil
+	return &user, res
 }
 
-func EmailExists(email string) (bool, error) {
+func EmailExists(email string) (bool, *gorm.DB) {
 	count := 0
 	res := db.Model(&User{}).Where("email = ?", email).Count(&count)
-	if res.Error != nil {
-		return false, res.Error
-	}
-	if count > 0 {
-		return true, nil
-	}
-	return false, nil
+	return count > 0, res
 }
 
-func CreateUser(email, name, password string) (*User, error) {
+func CreateUser(email, name, password string) (*User, *gorm.DB) {
 	user := &User{
 		Email:    email,
 		Name:     name,
 		Password: HashPlainPassword(password),
 	}
 	res := db.Create(user)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-	return user, nil
+	return user, res
 }
 
 func HashPlainPassword(password string) string {

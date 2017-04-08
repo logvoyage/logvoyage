@@ -38,9 +38,9 @@ func UsersCreate(ctx *iris.Context) {
 		return
 	}
 
-	exists, err := models.EmailExists(data.Email)
+	exists, res := models.EmailExists(data.Email)
 
-	if err != nil {
+	if res.Error != nil {
 		response.Panic(ctx, err)
 		return
 	}
@@ -50,9 +50,9 @@ func UsersCreate(ctx *iris.Context) {
 		return
 	}
 
-	_, err = models.CreateUser(data.Email, data.Name, data.Password)
+	_, res = models.CreateUser(data.Email, data.Name, data.Password)
 
-	if err != nil {
+	if res.Error != nil {
 		response.Panic(ctx, err)
 		return
 	}
@@ -64,14 +64,18 @@ func UsersLogin(ctx *iris.Context) {
 	var data userData
 	ctx.ReadJSON(&data)
 
-	user, err := models.FindUserByEmail(data.Email)
+	user, res := models.FindUserByEmail(data.Email)
 
-	if err != nil {
-		response.Error(ctx, "User not found")
+	if res.Error != nil {
+		if res.RecordNotFound() {
+			response.Error(ctx, "User not found")
+		} else {
+			response.Panic(ctx, res.Error)
+		}
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password))
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password))
 
 	if err != nil {
 		response.Error(ctx, "User not found")
