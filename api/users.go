@@ -45,7 +45,7 @@ func UsersCreate(ctx *iris.Context) {
 		return
 	}
 
-	if exists == true {
+	if exists {
 		response.Error(ctx, "Email is already used")
 		return
 	}
