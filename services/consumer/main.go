@@ -39,8 +39,8 @@ type message struct {
 }
 
 type doc struct {
-	Source   string
-	Datetime int64
+	Source   string `json:"source"`
+	Datetime int64  `json:"datetime"`
 }
 
 // inMemStorage stores all received valid message in memory.
@@ -63,8 +63,6 @@ func (s *inMemStorage) Add(msg message) {
 }
 
 func (s *inMemStorage) Persist() {
-
-	// TODO: Handle error
 	client, err := elasticClient()
 	if err != nil {
 		log.Println("Error connecting to elastic:", err)
@@ -80,8 +78,8 @@ func (s *inMemStorage) Persist() {
 	bulkRequest := client.Bulk()
 	for _, msg := range s.messages {
 		req := elastic.NewBulkIndexRequest().Index("logs-" + msg.ProjectUUID).Type(msg.Tag)
-		var userJson map[string]interface{}
-		err := json.Unmarshal([]byte(msg.Source), &userJson)
+		var userJSON map[string]interface{}
+		err := json.Unmarshal([]byte(msg.Source), &userJSON)
 
 		if err != nil {
 			doc := doc{
@@ -91,9 +89,9 @@ func (s *inMemStorage) Persist() {
 			req.Doc(doc)
 		} else {
 			// Save user json
-			fmt.Println("Save user json:", userJson)
-			userJson["Datetime"] = msg.Datetime
-			req.Doc(userJson)
+			fmt.Println("Save user json:", userJSON)
+			userJSON["Datetime"] = msg.Datetime
+			req.Doc(userJSON)
 		}
 		bulkRequest.Add(req)
 	}
