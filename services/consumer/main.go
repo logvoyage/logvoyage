@@ -40,7 +40,7 @@ type message struct {
 
 type doc struct {
 	Source   string `json:"source"`
-	Datetime int64  `json:"datetime"`
+	Datetime int64  `json:"_datetime"`
 }
 
 // inMemStorage stores all received valid message in memory.
@@ -90,7 +90,7 @@ func (s *inMemStorage) Persist() {
 		} else {
 			// Save user json
 			fmt.Println("Save user json:", userJSON)
-			userJSON["Datetime"] = msg.Datetime
+			userJSON["_datetime"] = msg.Datetime
 			req.Doc(userJSON)
 		}
 		bulkRequest.Add(req)
