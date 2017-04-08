@@ -27,10 +27,12 @@ func NewConnection() *gorm.DB {
 		config.Get("db.sslmode"),
 		config.Get("db.password"),
 	)
+	// fmt.Println("Connection DSN:", dsn)
 	db, err := gorm.Open("postgres", dsn)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Database connection error:", err)
 	}
+	db.LogMode(true)
 	return db
 }
 

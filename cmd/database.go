@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"log"
 
 	"bitbucket.org/firstrow/logvoyage/models/migrations"
 	"bitbucket.org/firstrow/logvoyage/shared/config"
 
-	"github.com/go-pg/pg"
+	"github.com/jinzhu/gorm"
 	"github.com/spf13/cobra"
 )
 
@@ -16,29 +16,42 @@ var createCmd = &cobra.Command{
 	Short: "Creates database",
 	Long:  "Creates database",
 	Run: func(cmd *cobra.Command, args []string) {
-		conn := pg.Connect(&pg.Options{
-			Addr:     fmt.Sprintf("%s:%s", config.Get("db.address"), config.Get("db.port")),
-			User:     config.Get("db.user"),
-			Password: config.Get("db.password"),
-		})
-		sql := fmt.Sprintf("CREATE DATABASE %s", config.Get("db.database"))
-		_, err := conn.Exec(sql)
+		dsn := fmt.Sprintf(
+			"host=%s port=%s user=%s sslmode=%s password=%s",
+			config.Get("db.address"),
+			config.Get("db.port"),
+			config.Get("db.user"),
+			config.Get("db.sslmode"),
+			config.Get("db.password"),
+		)
+		db, err := gorm.Open("postgres", dsn)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		} else {
-			fmt.Printf("Created database %s\n", config.Get("db.database"))
+			log.Fatal(err)
 		}
+		sql := fmt.Sprintf("CREATE DATABASE %s", config.Get("db.database"))
+		db.Exec(sql)
+		if db.Error != nil {
+			fmt.Println("Error creating database", db.Error)
+		}
+		fmt.Printf("Database %s created\n", config.Get("db.database"))
 	},
 }
 
 var migrateCmd = &cobra.Command{
-	Use:   "migrate [up, down, version]",
+	Use:   "migrate",
 	Short: "Apply database migrations",
 	Long:  "Apply database migrations",
 	Run: func(cmd *cobra.Command, args []string) {
-		migrations.Migrate("init") // Always check for migrations table
-		migrations.Migrate(args...)
+		migrations.Migrate()
+	},
+}
+
+var rollbackCmd = &cobra.Command{
+	Use:   "rollback",
+	Short: "Rollback last migration",
+	Long:  "Rollback last migration",
+	Run: func(cmd *cobra.Command, args []string) {
+		migrations.Rollback()
 	},
 }
 
@@ -48,6 +61,7 @@ func init() {
 	databaseCmd.AddCommand(
 		createCmd,
 		migrateCmd,
+		rollbackCmd,
 	)
 
 	RootCmd.AddCommand(databaseCmd)

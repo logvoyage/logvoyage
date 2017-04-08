@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/satori/go.uuid"
 )
 
@@ -33,7 +34,7 @@ func CreateProject(name string, u *User) (*Project, error) {
 
 func FindProjectByUUID(uuid string) (*Project, error) {
 	var p Project
-	res := db.Where("uuid = ?", uuid).First(&p)
+	res := db.Model(&p).Where("uuid = ?", uuid).First(&p)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -45,7 +46,7 @@ func FindProjectByUUID(uuid string) (*Project, error) {
 
 func FindAllProjectsByUser(u *User) ([]Project, error) {
 	var p []Project
-	res := db.Where("owner_id = ?", u.ID).Find(p)
+	res := db.Model(&Project{}).Where("owner_id = ?", u.ID).Find(p)
 	if res.Error != nil {
 		return nil, res.Error
 	}

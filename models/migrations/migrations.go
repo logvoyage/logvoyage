@@ -1,42 +1,70 @@
 package migrations
 
 import (
-	"fmt"
-	"os"
+	"log"
 
 	"bitbucket.org/firstrow/logvoyage/models"
-	"github.com/firstrow/migrations"
+	"github.com/jinzhu/gorm"
+	gormigrate "gopkg.in/gormigrate.v1"
 )
 
-// Migrate executes migration command.
-// cmd values can be: up, down, init, version, create
-func Migrate(cmd ...string) (int64, int64) {
-	path := fmt.Sprintf("%s/src/bitbucket.org/firstrow/logvoyage/models/migrations", os.Getenv("GOPATH"))
-	migrations.SetMigratonsPath(path)
-
+// Migrate migrate database schema up
+func Migrate() {
 	db := models.GetConnection()
+	db.LogMode(true)
 
-	oldVersion, newVersion, err := migrations.Run(db, cmd...)
-	if err != nil {
-		exitf(err.Error())
-	}
-	if newVersion != oldVersion {
-		fmt.Printf("migrated from version %d to %d\n", oldVersion, newVersion)
-	}
+	m := gormigrate.New(db, gormigrate.DefaultOptions, getMigrations())
 
-	if len(cmd) > 0 {
-		if cmd[0] == "version" {
-			fmt.Printf("version: %v\n", oldVersion)
-		}
+	if err := m.Migrate(); err != nil {
+		log.Fatalf("Could not migrate: %v", err)
 	}
-	return oldVersion, newVersion
+	log.Printf("Migration did run successfully")
 }
 
-func errorf(s string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, s+"\n", args...)
+// Rollback rollbacks last migration
+func Rollback() {
+	db := models.GetConnection()
+	db.LogMode(true)
+
+	m := gormigrate.New(db, gormigrate.DefaultOptions, getMigrations())
+
+	if err := m.RollbackLast(); err != nil {
+		log.Fatalf("Could not migrate: %v", err)
+	}
+	log.Printf("Migration did run successfully")
 }
 
-func exitf(s string, args ...interface{}) {
-	errorf(s, args...)
-	os.Exit(1)
+func getMigrations() []*gormigrate.Migration {
+	return []*gormigrate.Migration{
+		{
+			ID: "201608301400",
+			Migrate: func(tx *gorm.DB) error {
+				type User struct {
+					gorm.Model
+					Email    string
+					Name     string
+					Password string
+				}
+				return tx.AutoMigrate(&User{}).Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.DropTable("users").Error
+			},
+		},
+		{
+			ID: "201608301430",
+			Migrate: func(tx *gorm.DB) error {
+				type Project struct {
+					gorm.Model
+					Name    string
+					UUID    string
+					OwnerID uint
+				}
+				return tx.AutoMigrate(&Project{}).Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.DropTable("projects").Error
+			},
+		},
+	}
 }

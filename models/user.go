@@ -20,7 +20,7 @@ var (
 
 func FindUserByEmail(email string) (*User, error) {
 	var user User
-	res := db.Where("email = ?", email).First(&user)
+	res := db.Model(&user).Where("email = ?", email).First(&user)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -32,7 +32,7 @@ func FindUserByEmail(email string) (*User, error) {
 
 func FindUserById(id interface{}) (*User, error) {
 	var user User
-	res := db.Where("id = ?", id).First(&user)
+	res := db.Model(&user).Where("id = ?", id).First(&user)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -44,7 +44,7 @@ func FindUserById(id interface{}) (*User, error) {
 
 func EmailExists(email string) (bool, error) {
 	count := 0
-	res := db.Where("email = ?", email).Count(&count)
+	res := db.Model(&User{}).Where("email = ?", email).Count(&count)
 	if res.Error != nil {
 		return false, res.Error
 	}
