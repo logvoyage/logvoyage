@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"time"
 
 	"bitbucket.org/firstrow/logvoyage/models"
@@ -62,7 +61,6 @@ func UsersCreate(ctx *iris.Context) {
 }
 
 func UsersLogin(ctx *iris.Context) {
-	log.Println("USERS REQUEST")
 	var data userData
 	ctx.ReadJSON(&data)
 

@@ -21,10 +21,10 @@ type Response struct {
 }
 
 // Success responses with 200 code.
-// Note: only fist body argument will be passed to the response.
+// Note: only fist data argument will be passed to the response.
 func (r Response) Success(ctx *iris.Context, body ...interface{}) {
 	if len(body) > 0 {
-		ctx.JSON(200, map[string]interface{}{"success": true, "body": body[0]})
+		ctx.JSON(200, map[string]interface{}{"success": true, "data": body[0]})
 	} else {
 		ctx.JSON(200, map[string]interface{}{"success": true})
 	}
@@ -87,7 +87,7 @@ func authMiddleware(ctx *iris.Context) {
 	ctx.Next()
 }
 
-func newCors() iris.RouterWrapperPolicy {
+func newCorsAdapter() iris.RouterWrapperPolicy {
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		w.Header().Add("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
@@ -122,20 +122,24 @@ func init() {
 	app.Adapt(
 		httprouter.New(),
 		iris.DevLogger(),
-		newCors(),
+		newCorsAdapter(),
 	)
 
-	userAPI := app.Party("/api/v1/users")
+	v1 := app.Party("/api/v1")
 	{
-		userAPI.Post("/", UsersCreate)
-		userAPI.Post("/login", UsersLogin)
+		userAPI := v1.Party("/users")
+		{
+			userAPI.Post("/", UsersCreate)
+			userAPI.Post("/login", UsersLogin)
+		}
+
+		projectAPI := v1.Party("/projects", authMiddleware)
+		{
+			projectAPI.Post("/", ProjectsCreate)
+			projectAPI.Get("/", ProjectsList)
+		}
 	}
 
-	projectAPI := app.Party("/projects", authMiddleware)
-	{
-		projectAPI.Post("/", ProjectsCreate)
-		projectAPI.Get("/", ProjectsList)
-	}
 }
 
 func main() {
