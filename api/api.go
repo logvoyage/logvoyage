@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 
 	"bitbucket.org/firstrow/logvoyage/models"
 	"bitbucket.org/firstrow/logvoyage/shared/config"
@@ -86,18 +87,31 @@ func authMiddleware(ctx *iris.Context) {
 	ctx.Next()
 }
 
-func corsMiddleware(ctx *iris.Context) {
-	if ctx.Request.Method != "OPTIONS" {
-		ctx.Next()
-	} else {
-		ctx.SetHeader("Access-Control-Allow-Origin", "*")
-		ctx.SetHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
-		ctx.SetHeader("Access-Control-Allow-Headers", "authorization, origin, content-type, accept")
-		ctx.SetHeader("Allow", "HEAD,GET,POST,PUT,PATCH,DELETE,OPTIONS")
-		ctx.SetHeader("Content-Type", "application/json")
-		ctx.SetStatusCode(200)
-		ctx.StopExecution()
+func newCors() iris.RouterWrapperPolicy {
+	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		w.Header().Add("Access-Control-Allow-Origin", "*")
+		w.Header().Add("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
+		w.Header().Add("Access-Control-Allow-Headers", "authorization, origin, content-type, accept, x-xsrf-token")
+		w.Header().Add("Allow", "HEAD,GET,POST,PUT,PATCH,DELETE,OPTIONS")
+		w.Header().Add("Content-Type", "application/json")
+		if r.Method != "OPTIONS" {
+			next(w, r)
+		} else {
+			w.WriteHeader(http.StatusOK)
+		}
 	}
+	// log.Println("REQUEST")
+	// if ctx.Request.Method != "OPTIONS" {
+	// 	ctx.Next()
+	// } else {
+	// 	ctx.SetHeader("Access-Control-Allow-Origin", "*")
+	// 	ctx.SetHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
+	// 	ctx.SetHeader("Access-Control-Allow-Headers", "authorization, origin, content-type, accept")
+	// 	ctx.SetHeader("Allow", "HEAD,GET,POST,PUT,PATCH,DELETE,OPTIONS")
+	// 	ctx.SetHeader("Content-Type", "application/json")
+	// 	ctx.SetStatusCode(200)
+	// 	ctx.StopExecution()
+	// }
 }
 
 func init() {
@@ -108,9 +122,10 @@ func init() {
 	app.Adapt(
 		httprouter.New(),
 		iris.DevLogger(),
+		newCors(),
 	)
 
-	userAPI := app.Party("/users")
+	userAPI := app.Party("/api/v1/users")
 	{
 		userAPI.Post("/", UsersCreate)
 		userAPI.Post("/login", UsersLogin)

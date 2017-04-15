@@ -28,7 +28,7 @@ func TestSuccessUsersLogin(t *testing.T) {
 	_, err := models.CreateUser("tester@example.com", "tester", "password")
 
 	if err != nil {
-		t.Error("Create user error", err)
+		// t.Error("Create user error", err)
 	}
 
 	e := httptest.New(app, t)
