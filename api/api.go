@@ -100,18 +100,6 @@ func newCorsAdapter() iris.RouterWrapperPolicy {
 			w.WriteHeader(http.StatusOK)
 		}
 	}
-	// log.Println("REQUEST")
-	// if ctx.Request.Method != "OPTIONS" {
-	// 	ctx.Next()
-	// } else {
-	// 	ctx.SetHeader("Access-Control-Allow-Origin", "*")
-	// 	ctx.SetHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
-	// 	ctx.SetHeader("Access-Control-Allow-Headers", "authorization, origin, content-type, accept")
-	// 	ctx.SetHeader("Allow", "HEAD,GET,POST,PUT,PATCH,DELETE,OPTIONS")
-	// 	ctx.SetHeader("Content-Type", "application/json")
-	// 	ctx.SetStatusCode(200)
-	// 	ctx.StopExecution()
-	// }
 }
 
 func init() {
