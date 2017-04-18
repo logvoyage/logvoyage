@@ -52,7 +52,7 @@ func (r Response) Forbidden(ctx *iris.Context) {
 
 // authMiddleware performs authentication
 func authMiddleware(ctx *iris.Context) {
-	tokenString := ctx.RequestHeader("Authentication")
+	tokenString := ctx.RequestHeader("X-Authentication")
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -91,7 +91,7 @@ func newCorsAdapter() iris.RouterWrapperPolicy {
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		w.Header().Add("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
-		w.Header().Add("Access-Control-Allow-Headers", "authorization, origin, content-type, accept, x-xsrf-token")
+		w.Header().Add("Access-Control-Allow-Headers", "x-authentication, origin, content-type, accept, x-xsrf-token")
 		w.Header().Add("Allow", "HEAD,GET,POST,PUT,PATCH,DELETE,OPTIONS")
 		w.Header().Add("Content-Type", "application/json")
 		if r.Method != "OPTIONS" {
@@ -113,15 +113,15 @@ func init() {
 		newCorsAdapter(),
 	)
 
-	v1 := app.Party("/api/v1")
+	root := app.Party("/api")
 	{
-		userAPI := v1.Party("/users")
+		userAPI := root.Party("/users")
 		{
 			userAPI.Post("/", UsersCreate)
 			userAPI.Post("/login", UsersLogin)
 		}
 
-		projectAPI := v1.Party("/projects", authMiddleware)
+		projectAPI := root.Party("/projects", authMiddleware)
 		{
 			projectAPI.Post("/", ProjectsCreate)
 			projectAPI.Get("/", ProjectsList)
