@@ -18,7 +18,6 @@ var (
 	ErrorUserNotFound = errors.New("User not found")
 )
 
-// FindUserByEmail sdfs df
 func FindUserByEmail(email string) (*User, *gorm.DB) {
 	var user User
 	res := db.Model(&user).Where("email = ?", email).First(&user)
