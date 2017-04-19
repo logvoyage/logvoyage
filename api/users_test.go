@@ -19,7 +19,7 @@ func TestSuccessUsersCreate(t *testing.T) {
 	expected := map[string]bool{
 		"success": true,
 	}
-	e.POST("/api/v1/users/").WithJSON(data).Expect().JSON().Equal(expected)
+	e.POST("/api/users/").WithJSON(data).Expect().JSON().Equal(expected)
 }
 
 func TestSuccessUsersLogin(t *testing.T) {
@@ -32,7 +32,7 @@ func TestSuccessUsersLogin(t *testing.T) {
 		Email:    "tester@example.com",
 		Password: "password",
 	}
-	r := e.POST("/api/v1/users/login").WithJSON(data).
+	r := e.POST("/api/users/login").WithJSON(data).
 		Expect().
 		JSON().
 		Object()

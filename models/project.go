@@ -3,13 +3,11 @@ package models
 import (
 	"errors"
 
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/satori/go.uuid"
 )
 
 type Project struct {
-	gorm.Model
+	BaseModel
 	Name    string `json:"name"`
 	UUID    string `json:"uuid"`
 	OwnerID uint   `json:"owner_id"`
@@ -46,7 +44,7 @@ func FindProjectByUUID(uuid string) (*Project, error) {
 
 func FindAllProjectsByUser(u *User) ([]Project, error) {
 	var p []Project
-	res := db.Model(&Project{}).Where("owner_id = ?", u.ID).Find(p)
+	res := db.Model(&Project{}).Where("owner_id = ?", u.ID).Find(&p)
 	if res.Error != nil {
 		return nil, res.Error
 	}

@@ -123,8 +123,8 @@ func init() {
 
 		projectAPI := root.Party("/projects", authMiddleware)
 		{
-			projectAPI.Post("/", ProjectsCreate)
-			projectAPI.Get("/", ProjectsList)
+			projectAPI.Get("/list", ProjectsList)
+			projectAPI.Post("/new", ProjectsCreate)
 		}
 	}
 
