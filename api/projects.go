@@ -17,8 +17,7 @@ func (p projectData) Validate() error {
 	)
 }
 
-// ProjectsCreate creates new project and generates its uuid.
-func ProjectsCreate(ctx *iris.Context) {
+func projectsCreate(ctx *iris.Context) {
 	var data projectData
 	ctx.ReadJSON(&data)
 
@@ -39,9 +38,7 @@ func ProjectsCreate(ctx *iris.Context) {
 	response.Success(ctx, project)
 }
 
-// ProjectsList displays list of user owned projects and projects where
-// user is invited.
-func ProjectsList(ctx *iris.Context) {
+func projectsIndex(ctx *iris.Context) {
 	user := ctx.Get("user").(*models.User)
 	projects, err := models.FindAllProjectsByUser(user)
 
@@ -50,5 +47,18 @@ func ProjectsList(ctx *iris.Context) {
 		return
 	}
 
-	response.Success(ctx, map[string]interface{}{"projects": projects})
+	response.Success(ctx, projects)
+}
+
+func projectsLoad(ctx *iris.Context) {
+	user := ctx.Get("user").(*models.User)
+	id, _ := ctx.ParamInt("id")
+	project, err := models.FindProjectById(id, user)
+
+	if err != nil {
+		response.Panic(ctx, err)
+		return
+	}
+
+	response.Success(ctx, project)
 }

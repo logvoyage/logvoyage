@@ -9,7 +9,7 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"gopkg.in/kataras/iris.v6"
-	"gopkg.in/kataras/iris.v6/adaptors/httprouter"
+	"gopkg.in/kataras/iris.v6/adaptors/gorillamux"
 )
 
 var (
@@ -108,7 +108,7 @@ func init() {
 	app = iris.New()
 
 	app.Adapt(
-		httprouter.New(),
+		gorillamux.New(),
 		iris.DevLogger(),
 		newCorsAdapter(),
 	)
@@ -121,11 +121,13 @@ func init() {
 			userAPI.Post("/login", UsersLogin)
 		}
 
-		projectAPI := root.Party("/projects", authMiddleware)
+		projectsAPI := root.Party("/projects", authMiddleware)
 		{
-			projectAPI.Get("/list", ProjectsList)
-			projectAPI.Post("/new", ProjectsCreate)
+			projectsAPI.Get("/{id:[0-9]+}", projectsLoad)
+			projectsAPI.Get("", projectsIndex)
+			projectsAPI.Post("", projectsCreate)
 		}
+
 	}
 
 }

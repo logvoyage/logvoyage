@@ -42,6 +42,18 @@ func FindProjectByUUID(uuid string) (*Project, error) {
 	return &p, nil
 }
 
+func FindProjectById(id int, u *User) (*Project, error) {
+	var p Project
+	res := db.Model(&p).Where("id = ? AND owner_id = ?", id, u.ID).First(&p)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RecordNotFound() {
+		return nil, ErrorProjectNotFound
+	}
+	return &p, nil
+}
+
 func FindAllProjectsByUser(u *User) ([]Project, error) {
 	var p []Project
 	res := db.Model(&Project{}).Where("owner_id = ?", u.ID).Find(&p)
