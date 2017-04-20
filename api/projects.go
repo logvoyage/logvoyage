@@ -17,6 +17,18 @@ func (p projectData) Validate() error {
 	)
 }
 
+func projectsIndex(ctx *iris.Context) {
+	user := ctx.Get("user").(*models.User)
+	projects, res := models.FindAllProjectsByUser(user)
+
+	if res.Error != nil {
+		response.Panic(ctx, res.Error)
+		return
+	}
+
+	response.Success(ctx, projects)
+}
+
 func projectsCreate(ctx *iris.Context) {
 	var data projectData
 	ctx.ReadJSON(&data)
@@ -28,35 +40,65 @@ func projectsCreate(ctx *iris.Context) {
 		return
 	}
 
-	project, err := models.CreateProject(data.Name, ctx.Get("user").(*models.User))
+	project, res := models.CreateProject(data.Name, ctx.Get("user").(*models.User))
 
-	if err != nil {
-		response.Panic(ctx, err)
+	if res.Error != nil {
+		response.Panic(ctx, res.Error)
 		return
 	}
 
 	response.Success(ctx, project)
 }
 
-func projectsIndex(ctx *iris.Context) {
+func projectsUpdate(ctx *iris.Context) {
 	user := ctx.Get("user").(*models.User)
-	projects, err := models.FindAllProjectsByUser(user)
+	id, _ := ctx.ParamInt("id")
 
-	if err != nil {
-		response.Panic(ctx, err)
+	project, res := models.FindProjectById(id, user)
+
+	if res.Error != nil {
+		if res.RecordNotFound() {
+			response.Error(ctx, "Project not found")
+		} else {
+			response.Panic(ctx, res.Error)
+		}
 		return
 	}
 
-	response.Success(ctx, projects)
+	var data projectData
+	ctx.ReadJSON(&data)
+
+	err := data.Validate()
+
+	if err != nil {
+		response.Error(ctx, err)
+		return
+	}
+
+	// Assign new attributes
+	project.Name = data.Name
+
+	_, res = models.SaveProject(project)
+
+	if res.Error != nil {
+		response.Panic(ctx, res.Error)
+		return
+	}
+
+	response.Success(ctx, project)
 }
 
 func projectsLoad(ctx *iris.Context) {
 	user := ctx.Get("user").(*models.User)
 	id, _ := ctx.ParamInt("id")
-	project, err := models.FindProjectById(id, user)
+	project, res := models.FindProjectById(id, user)
 
-	if err != nil {
-		response.Panic(ctx, err)
+	if res.Error != nil {
+		if res.RecordNotFound() {
+			response.Error(ctx, "Project not found")
+		} else {
+			response.Panic(ctx, res.Error)
+		}
 		return
 	}
 

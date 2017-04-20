@@ -124,6 +124,7 @@ func init() {
 		projectsAPI := root.Party("/projects", authMiddleware)
 		{
 			projectsAPI.Get("/{id:[0-9]+}", projectsLoad)
+			projectsAPI.Post("/{id:[0-9]+}", projectsUpdate)
 			projectsAPI.Get("", projectsIndex)
 			projectsAPI.Post("", projectsCreate)
 		}
