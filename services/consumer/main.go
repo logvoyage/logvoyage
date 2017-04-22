@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"bitbucket.org/firstrow/logvoyage/models"
+	"bitbucket.org/firstrow/logvoyage/shared/config"
 	"github.com/streadway/amqp"
 	"gopkg.in/olivere/elastic.v5"
 )
@@ -34,12 +35,12 @@ var (
 type message struct {
 	ProjectUUID string
 	Tag         string
-	Source      string
+	Msg         string
 	Datetime    int64
 }
 
 type doc struct {
-	Source   string `json:"source"`
+	Msg      string `json:"msg"`
 	Datetime int64  `json:"_datetime"`
 }
 
@@ -77,13 +78,13 @@ func (s *inMemStorage) Persist() {
 
 	bulkRequest := client.Bulk()
 	for _, msg := range s.messages {
-		req := elastic.NewBulkIndexRequest().Index("logs-" + msg.ProjectUUID).Type(msg.Tag)
+		req := elastic.NewBulkIndexRequest().Index(models.ProjectIndexName(msg.ProjectUUID)).Type(msg.Tag)
 		var userJSON map[string]interface{}
-		err := json.Unmarshal([]byte(msg.Source), &userJSON)
+		err := json.Unmarshal([]byte(msg.Msg), &userJSON)
 
 		if err != nil {
 			doc := doc{
-				Source:   msg.Source,
+				Msg:      msg.Msg,
 				Datetime: msg.Datetime,
 			}
 			req.Doc(doc)
@@ -116,7 +117,7 @@ func (s *inMemStorage) startTimer() {
 }
 
 func elasticClient() (*elastic.Client, error) {
-	return elastic.NewClient(elastic.SetURL("http://ubuntu:9200"))
+	return elastic.NewClient(elastic.SetURL(config.Get("elastic.url")))
 }
 
 // processMessage extracts apiKey, tag(optional) and source message from log line.
@@ -173,9 +174,9 @@ func processDelivery(d amqp.Delivery) {
 	}
 
 	// TODO: Cache project in mem
-	project, err := models.FindProjectByUUID(projectUUID)
+	project, res := models.FindProjectByUUID(projectUUID)
 
-	if err != nil {
+	if res.Error != nil {
 		log.Println("Project not found")
 		return
 	}
@@ -183,13 +184,13 @@ func processDelivery(d amqp.Delivery) {
 	storage.Add(message{
 		ProjectUUID: project.UUID,
 		Tag:         tag,
-		Source:      msgSource,
+		Msg:         msgSource,
 		Datetime:    time.Now().UTC().Unix(),
 	})
 }
 
 func main() {
-	amqpConn, err := amqp.Dial("amqp://guest:guest@ubuntu:5672")
+	amqpConn, err := amqp.Dial(config.Get("amqp.url"))
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer amqpConn.Close()
 

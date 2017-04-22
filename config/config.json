@@ -7,5 +7,11 @@
     "password": "postgres",
     "port": "5432",
     "sslmode": "disable"
+  },
+  "elastic": {
+    "url": "http://ubuntu:9200"
+  },
+  "amqp": {
+    "url": "amqp://guest:guest@ubuntu:5672"
   }
 }

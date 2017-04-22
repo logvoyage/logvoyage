@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bitbucket.org/firstrow/logvoyage/elastic"
 	"bitbucket.org/firstrow/logvoyage/models"
 
 	validation "github.com/go-ozzo/ozzo-validation"
@@ -13,7 +14,7 @@ type projectData struct {
 
 func (p projectData) Validate() error {
 	return validation.ValidateStruct(&p,
-		validation.Field(&p.Name, validation.Required, validation.Length(1, 255)),
+		validation.Field(&p.Name, validation.Required, validation.Length(1, 30)),
 	)
 }
 
@@ -103,4 +104,65 @@ func projectsLoad(ctx *iris.Context) {
 	}
 
 	response.Success(ctx, project)
+}
+
+func projectsDelete(ctx *iris.Context) {
+	user := ctx.Get("user").(*models.User)
+	id, _ := ctx.ParamInt("id")
+	project, res := models.FindProjectById(id, user)
+
+	if res.Error != nil {
+		if res.RecordNotFound() {
+			response.Error(ctx, "Project not found")
+		} else {
+			response.Panic(ctx, res.Error)
+		}
+		return
+	}
+
+	res = models.DeleteProject(project)
+
+	if res.Error != nil {
+		response.Panic(ctx, res.Error)
+		return
+	}
+
+	response.Success(ctx)
+}
+
+type searchQuery struct {
+	Query string `json:"query"`
+}
+
+// Search log records in ElasticSearch.
+func projectsLogs(ctx *iris.Context) {
+	var query searchQuery
+	err := ctx.ReadJSON(&query)
+
+	if err != nil {
+		response.Error(ctx, "Error parsing request body")
+		return
+	}
+
+	user := ctx.Get("user").(*models.User)
+	id, _ := ctx.ParamInt("id")
+	project, res := models.FindProjectById(id, user)
+
+	if res.Error != nil {
+		if res.RecordNotFound() {
+			response.Error(ctx, "Project not found")
+		} else {
+			response.Panic(ctx, res.Error)
+		}
+		return
+	}
+
+	logs, err := elastic.SearchLogs(user, project, []string{}, query.Query)
+
+	if err != nil {
+		response.Panic(ctx, err)
+		return
+	}
+
+	response.Success(ctx, logs)
 }

@@ -125,8 +125,10 @@ func init() {
 		{
 			projectsAPI.Get("/{id:[0-9]+}", projectsLoad)
 			projectsAPI.Post("/{id:[0-9]+}", projectsUpdate)
+			projectsAPI.Delete("/{id:[0-9]+}", projectsDelete)
 			projectsAPI.Get("", projectsIndex)
 			projectsAPI.Post("", projectsCreate)
+			projectsAPI.Post("/{id:[0-9]+}/logs", projectsLogs)
 		}
 
 	}
