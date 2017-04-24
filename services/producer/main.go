@@ -152,5 +152,7 @@ func main() {
 	go startHttpHandler()
 	go startTCPHandler()
 	go startUDPHandler()
-	select {}
+
+	exit := make(chan int)
+	<-exit
 }
