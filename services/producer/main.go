@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"strings"
 
+	"bitbucket.org/firstrow/logvoyage/shared/config"
 	"github.com/firstrow/tcp_server"
 	"github.com/streadway/amqp"
 )
@@ -127,10 +128,11 @@ func sendToQueue(body []byte) {
 }
 
 func main() {
-	amqpConn, err := amqp.Dial("amqp://guest:guest@ubuntu:5672")
+	amqpConn, err := amqp.Dial(config.Get("amqp.url"))
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer amqpConn.Close()
 
+	// TODO: Put channel into confirm mode.
 	channel, err = amqpConn.Channel()
 	failOnError(err, "Failed to open a channel")
 	defer channel.Close()
