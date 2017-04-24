@@ -123,6 +123,7 @@ func sendToQueue(body []byte) {
 		})
 
 	if err != nil {
+		// TODO: Use logrus package and set proper error level for each log call.
 		log.Println("Error publishing message:", string(body))
 	}
 }
