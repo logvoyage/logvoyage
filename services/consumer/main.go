@@ -160,7 +160,7 @@ func handle(deliveries <-chan amqp.Delivery) {
 		)
 		processDelivery(d)
 	}
-	log.Fatalln("Deliveries channel closed")
+	log.Println("Deliveries channel closed")
 }
 
 func processDelivery(d amqp.Delivery) {
@@ -241,5 +241,6 @@ func main() {
 	// TODO: Handle close method. See example consumer.
 	go handle(deliveries)
 
-	select {}
+	exit := make(chan int)
+	<-exit
 }
