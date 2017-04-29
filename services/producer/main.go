@@ -27,8 +27,9 @@ func failOnError(err error, msg string) {
 }
 
 // httpHandler accepts incoming logs data. Each request should contain logs separated by new line.
+// tag param is oprional.
 // Example:
-// POST https://data.logvoyage.com?apiKey=user1
+// POST https://data.logvoyage.com?uuid=projectUUID&tag=nginx
 // log line 1
 // log line 2
 func httpHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,8 +37,8 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	apiKey := r.URL.Query().Get("apiKey")
-	if apiKey == "" {
+	projectUUID := r.URL.Query().Get("uuid")
+	if projectUUID == "" {
 		return
 	}
 
@@ -57,15 +58,13 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("HTTP Message:", string(body))
 
-	// Send message to rabbitmq.
-	// In case rabbit node is down - use Amazon SQS.
-	// TODO: Iterate over each line and append apiKey
+	// Send message to queue.
 	for _, line := range strings.Split(string(body), "\n") {
-		go sendToQueue([]byte(fmt.Sprintf("%s@%s %s", apiKey, tag, line)))
+		go sendToQueue([]byte(fmt.Sprintf("%s@%s %s", projectUUID, tag, line)))
 	}
 }
 
-func startHttpHandler() {
+func startHTTPHandler() {
 	http.HandleFunc("/", httpHandler)
 	err := http.ListenAndServe(":27000", nil)
 
@@ -109,7 +108,10 @@ func startUDPHandler() {
 	}
 }
 
-// sendToQueue sends data to queue or if it is down - to fallback queue
+// TODO: If rabbitmq is down - store messages in backlog.
+// What type of backlog? memory, hdd, database?
+//
+// sendToQueue sends data to queue.
 // body should be an array of bytes. First N bytes should be project uuid.
 func sendToQueue(body []byte) {
 	err := channel.Publish(
@@ -149,7 +151,7 @@ func main() {
 	)
 	failOnError(err, "Failed to declare a queue")
 
-	go startHttpHandler()
+	go startHTTPHandler()
 	go startTCPHandler()
 	go startUDPHandler()
 

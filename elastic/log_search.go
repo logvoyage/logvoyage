@@ -15,6 +15,8 @@ type LogRecord struct {
 }
 
 // SearchLogs sends query to elastic search index
+// types - ealstic types to search on.
+// queryString - user provided data.
 func SearchLogs(user *models.User, project *models.Project, types []string, queryString string) ([]string, error) {
 	ctx := context.Background()
 	es, _ := elastic.NewClient(elastic.SetURL(config.Get("elastic.url")))
@@ -30,6 +32,7 @@ func SearchLogs(user *models.User, project *models.Project, types []string, quer
 
 	if err != nil {
 		// Index not found. That's ok, user didn't sent any data for now.
+		// Otherwise error should be handled.
 		if elastic.IsNotFound(err) {
 			return []string{}, nil
 		}
@@ -48,7 +51,7 @@ func SearchLogs(user *models.User, project *models.Project, types []string, quer
 }
 
 // If queryString is empty - return all records.
-// Else, use query string.
+// Else, use query string dsl.
 func buildQuery(queryString string) elastic.Query {
 	if len(queryString) == 0 {
 		return elastic.NewMatchAllQuery()
