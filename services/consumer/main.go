@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"regexp"
 	"strings"
@@ -64,6 +63,7 @@ func (s *inMemStorage) Add(msg message) {
 }
 
 func (s *inMemStorage) Persist() {
+	// TODO: Connect to elastic when we actually have data to store.
 	client, err := elasticClient()
 	if err != nil {
 		log.Println("Error connecting to elastic:", err)
@@ -89,8 +89,6 @@ func (s *inMemStorage) Persist() {
 			}
 			req.Doc(doc)
 		} else {
-			// Save user json
-			fmt.Println("Save user json:", userJSON)
 			userJSON["_datetime"] = msg.Datetime
 			req.Doc(userJSON)
 		}

@@ -14,8 +14,3 @@ can be changed using `LV_DB_DATABASE=dbname` env variable. See example config fi
 # TODO:
 https://www.balabit.com/sites/default/files/documents/syslog-ng-ose-latest-guides/en/syslog-ng-ose-guide-admin/html/loggen.1.html
 - Test using loggen
-
-# Roadmap v1
-- docs
-- docker images
-- fully working logs

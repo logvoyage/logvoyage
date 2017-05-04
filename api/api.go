@@ -40,8 +40,9 @@ func (r Response) Error(ctx *iris.Context, err interface{}) {
 
 // Panic responses with 503 error.
 func (r Response) Panic(ctx *iris.Context, err error) {
-	// TODO: Send orignal error to issue tracker.
-	ctx.JSON(503, map[string]interface{}{"errors": err.Error()})
+	// TODO: Report error.
+	log.Println("Panic:", err.Error())
+	ctx.JSON(503, map[string]string{"errors": "There was an error performing your request."})
 }
 
 // Forbidden responses with 401 code, means user does not valid credentials to access handler.
