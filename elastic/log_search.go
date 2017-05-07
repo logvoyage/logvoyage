@@ -8,6 +8,9 @@ import (
 	"gopkg.in/olivere/elastic.v5"
 )
 
+// How many log records display per-page.
+const pageSize = 10
+
 // LogRecord fetched from storage
 type LogRecord struct {
 	Source   string
@@ -31,7 +34,7 @@ func SearchLogs(user *models.User, project *models.Project, types []string, quer
 	s := es.Search().
 		Index(project.IndexName()).
 		Type(types...).
-		From(page*5).Size(5).
+		From(page*pageSize).Size(pageSize).
 		Sort("_datetime", false).
 		Query(q)
 
