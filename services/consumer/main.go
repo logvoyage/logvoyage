@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"os"
+	"os/signal"
 	"regexp"
 	"strings"
 	"sync"
@@ -239,6 +241,9 @@ func main() {
 	// TODO: Handle close method. See example consumer.
 	go handle(deliveries)
 
-	exit := make(chan int)
+	exit := make(chan os.Signal)
+	signal.Notify(exit, os.Interrupt, os.Kill)
 	<-exit
+
+	storage.Persist()
 }
