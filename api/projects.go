@@ -167,3 +167,11 @@ func projectsLogs(ctx *iris.Context) {
 
 	response.Success(ctx, logs)
 }
+
+func projectsTypes(ctx *iris.Context) {
+	user := ctx.Get("user").(*models.User)
+	id, _ := ctx.ParamInt("id")
+	project, _ := models.FindProjectById(id, user)
+	types := elastic.GetIndexTypes(project)
+	response.Success(ctx, types)
+}

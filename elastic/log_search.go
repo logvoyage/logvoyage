@@ -2,6 +2,7 @@ package elastic
 
 import (
 	"context"
+	"reflect"
 
 	"bitbucket.org/firstrow/logvoyage/models"
 	"bitbucket.org/firstrow/logvoyage/shared/config"
@@ -71,4 +72,20 @@ func buildQuery(queryString string) elastic.Query {
 		return elastic.NewMatchAllQuery()
 	}
 	return elastic.NewQueryStringQuery(queryString).DefaultField("msg")
+}
+
+func GetIndexTypes(p *models.Project) []string {
+	ctx := context.Background()
+	es, _ := elastic.NewClient(elastic.SetURL(config.Get("elastic.url")))
+	mapping, _ := es.GetMapping().Index(p.IndexName()).Do(ctx)
+
+	keys := []string{}
+	if indexMapping, ok := mapping[p.IndexName()]; ok {
+		m := indexMapping.(map[string]interface{})
+		for _, v := range reflect.ValueOf(m["mappings"]).MapKeys() {
+			keys = append(keys, v.String())
+		}
+	}
+
+	return keys
 }
