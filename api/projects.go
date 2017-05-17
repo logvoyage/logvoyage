@@ -131,8 +131,9 @@ func projectsDelete(ctx *iris.Context) {
 }
 
 type searchQuery struct {
-	Query string `json:"query"`
-	Page  int    `json:"page"`
+	Query string   `json:"query"`
+	Page  int      `json:"page"`
+	Types []string `json:"types"`
 }
 
 // Search log records in ElasticSearch.
@@ -158,7 +159,7 @@ func projectsLogs(ctx *iris.Context) {
 		return
 	}
 
-	logs, err := elastic.SearchLogs(user, project, []string{}, query.Query, query.Page)
+	logs, err := elastic.SearchLogs(user, project, query.Types, query.Query, query.Page)
 
 	if err != nil {
 		response.Panic(ctx, err)

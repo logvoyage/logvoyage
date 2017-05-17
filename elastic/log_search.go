@@ -12,16 +12,16 @@ import (
 // How many log records display per-page.
 const pageSize = 10
 
-// LogRecord fetched from storage
+// LogRecord loaded from elastic
 type LogRecord struct {
-	Source   string
-	Datetime int64
+	Source string `json:"source"`
+	Type   string `json:"type"`
 }
 
 // SearchLogsResult contains logs and total number of records in storage.
 type SearchLogsResult struct {
-	Logs  []string `json:"logs"`
-	Total int64    `json:"total"`
+	Logs  []LogRecord `json:"logs"`
+	Total int64       `json:"total"`
 }
 
 // SearchLogs sends query to elastic search index
@@ -51,9 +51,13 @@ func SearchLogs(user *models.User, project *models.Project, types []string, quer
 	}
 
 	if searchResult.Hits.TotalHits > 0 {
-		var result = make([]string, len(searchResult.Hits.Hits))
+		var result = make([]LogRecord, len(searchResult.Hits.Hits))
 		for i, hit := range searchResult.Hits.Hits {
-			result[i] = string(*hit.Source)
+			r := LogRecord{
+				Source: string(*hit.Source),
+				Type:   string(hit.Type),
+			}
+			result[i] = r
 		}
 
 		return SearchLogsResult{
