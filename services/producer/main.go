@@ -12,8 +12,8 @@ import (
 	"net/http"
 	"strings"
 
-	"bitbucket.org/firstrow/logvoyage/shared/config"
 	"github.com/firstrow/tcp_server"
+	"github.com/logvoyage/logvoyage/shared/config"
 	"github.com/streadway/amqp"
 )
 

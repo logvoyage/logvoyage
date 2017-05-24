@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"bitbucket.org/firstrow/logvoyage/models/migrations"
-	"bitbucket.org/firstrow/logvoyage/shared/config"
+	"github.com/logvoyage/logvoyage/models/migrations"
+	"github.com/logvoyage/logvoyage/shared/config"
 
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/cobra"

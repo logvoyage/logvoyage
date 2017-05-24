@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"bitbucket.org/firstrow/logvoyage/cmd"
+	"github.com/logvoyage/logvoyage/cmd"
 )
 
 func main() {

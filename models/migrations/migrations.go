@@ -3,8 +3,8 @@ package migrations
 import (
 	"log"
 
-	"bitbucket.org/firstrow/logvoyage/models"
 	"github.com/jinzhu/gorm"
+	"github.com/logvoyage/logvoyage/models"
 	gormigrate "gopkg.in/gormigrate.v1"
 )
 

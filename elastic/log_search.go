@@ -4,8 +4,8 @@ import (
 	"context"
 	"reflect"
 
-	"bitbucket.org/firstrow/logvoyage/models"
-	"bitbucket.org/firstrow/logvoyage/shared/config"
+	"github.com/logvoyage/logvoyage/models"
+	"github.com/logvoyage/logvoyage/shared/config"
 	"gopkg.in/olivere/elastic.v5"
 )
 

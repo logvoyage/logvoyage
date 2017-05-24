@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"bitbucket.org/firstrow/logvoyage/shared/config"
 	"github.com/jinzhu/gorm"
+	"github.com/logvoyage/logvoyage/shared/config"
 
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )

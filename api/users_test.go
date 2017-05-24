@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"bitbucket.org/firstrow/logvoyage/models"
+	"github.com/logvoyage/logvoyage/models"
 	"gopkg.in/kataras/iris.v6/httptest"
 )
 

@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"bitbucket.org/firstrow/logvoyage/models"
-	"bitbucket.org/firstrow/logvoyage/shared/config"
+	"github.com/logvoyage/logvoyage/models"
+	"github.com/logvoyage/logvoyage/shared/config"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"gopkg.in/kataras/iris.v6"

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bitbucket.org/firstrow/logvoyage/elastic"
-	"bitbucket.org/firstrow/logvoyage/models"
+	"github.com/logvoyage/logvoyage/elastic"
+	"github.com/logvoyage/logvoyage/models"
 
 	validation "github.com/go-ozzo/ozzo-validation"
 	iris "gopkg.in/kataras/iris.v6"
