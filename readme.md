@@ -14,5 +14,5 @@ Documentation and docker images are coming soon.
 
 ### Installation
 ```
-go get -u github.com/firstrow/logvoyage
+go get -u github.com/logvoyage/logvoyage
 ```
