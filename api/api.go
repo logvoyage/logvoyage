@@ -1,6 +1,7 @@
-package main
+package api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -103,7 +104,7 @@ func newCorsAdapter() iris.RouterWrapperPolicy {
 	}
 }
 
-func init() {
+func Start(host, port string) {
 	response = Response{}
 
 	app = iris.New()
@@ -132,11 +133,8 @@ func init() {
 			projectsAPI.Post("/{id:[0-9]+}/logs", projectsLogs)
 			projectsAPI.Get("/{id:[0-9]+}/types", projectsTypes)
 		}
-
 	}
 
-}
-
-func main() {
-	app.Listen("127.0.0.1:3000")
+	dsn := fmt.Sprintf("%s:%s", host, port)
+	app.Listen(dsn)
 }

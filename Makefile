@@ -1,19 +1,17 @@
-PID      = /tmp/awesome-golang-project.pid
+PID      = /tmp/logvoyage-api.pid
 GO_FILES = $(wildcard *.go)
-APP      = ./api
+APP      = ./logvoyage
 serve: restart
 	@fswatch -o . | xargs -n1 -I{}  make restart || make kill
-
 kill:
 	@kill `cat $(PID)` || true
-
 before:
 	@echo "actually do nothing"
 $(APP): $(GO_FILES)
-	@go build -o api
+	@go build -o logvoyage
 restart: kill before $(APP)
-	@./api & echo $$! > $(PID)
+	@./logvoyage start api & echo $$! > $(PID)
 test:
 	@LV_MODE=test go test -v
 
-.PHONY: serve restart kill before # let's go to reserve rules names
+.PHONY: serve restart kill before
