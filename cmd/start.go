@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/logvoyage/logvoyage/api"
+	"github.com/logvoyage/logvoyage/consumer"
+	"github.com/logvoyage/logvoyage/producer"
 	"github.com/spf13/cobra"
 )
 
@@ -11,12 +13,31 @@ var apiCmd = &cobra.Command{
 	Use:   "api",
 	Short: " Starts backend API server",
 	Long:  "",
-
 	Run: func(cmd *cobra.Command, args []string) {
 		host := cmd.Flags().Lookup("host")
 		port := cmd.Flags().Lookup("port")
 		fmt.Println("Starting API server at port", port.Value)
 		api.Start(host.Value.String(), port.Value.String())
+	},
+}
+
+var consumerCmd = &cobra.Command{
+	Use:   "consumer",
+	Short: "Starts data consumer",
+	Long:  "Consumer will verify all incoming data and send it to storage",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Starting consumer")
+		consumer.Start()
+	},
+}
+
+var producerCmd = &cobra.Command{
+	Use:   "producer",
+	Short: "Starts data producer",
+	Long:  "Producer worker accepts user data and sends it to consumer worker",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Starting producer")
+		producer.Start()
 	},
 }
 
@@ -28,6 +49,8 @@ func init() {
 
 	startCmd.AddCommand(
 		apiCmd,
+		consumerCmd,
+		producerCmd,
 	)
 
 	RootCmd.AddCommand(startCmd)

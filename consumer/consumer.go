@@ -1,6 +1,6 @@
 // Consumer service accpets logs and other events from queue, validates,
 // and pushes to index and persistance storage.
-package main
+package consumer
 
 import (
 	"context"
@@ -189,7 +189,7 @@ func processDelivery(d amqp.Delivery) {
 	})
 }
 
-func main() {
+func Start() {
 	amqpConn, err := amqp.Dial(config.Get("amqp.url"))
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer amqpConn.Close()

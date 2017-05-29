@@ -1,7 +1,7 @@
 // Producer accepts logs from various sources and sends them to queue.
 // The main task of this service - to be up and running 100% of time and run fast.
 // Validation and other things should be done by background workers.
-package main
+package producer
 
 import (
 	"bufio"
@@ -130,7 +130,7 @@ func sendToQueue(body []byte) {
 	}
 }
 
-func main() {
+func Start() {
 	amqpConn, err := amqp.Dial(config.Get("amqp.url"))
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer amqpConn.Close()
