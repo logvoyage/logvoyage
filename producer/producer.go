@@ -74,7 +74,7 @@ func startHTTPHandler() {
 }
 
 func startTCPHandler() {
-	tcp := tcp_server.New("localhost:28000")
+	tcp := tcp_server.New(":28000")
 
 	tcp.OnNewClient(func(c *tcp_server.Client) {
 		log.Println("New TCP client connected")
