@@ -28,7 +28,7 @@ const (
 )
 
 var (
-	storage = newInMemStorage()
+	storage *inMemStorage
 	// See https://regex101.com/r/sQskdz/1
 	msgRegExp = regexp.MustCompile(`^([a-z0-9]{8}-[a-z0-9]{4}-[1-5][a-z0-9]{3}-[a-z0-9]{4}-[a-z0-9]{12})(@([a-zA-Z0-9\_\-\.]{1,20}))?\s*(.*)`)
 )
@@ -190,6 +190,8 @@ func processDelivery(d amqp.Delivery) {
 }
 
 func Start() {
+	storage = newInMemStorage()
+
 	amqpConn, err := amqp.Dial(config.Get("amqp.url"))
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer amqpConn.Close()
