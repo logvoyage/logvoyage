@@ -104,7 +104,7 @@ func newCorsAdapter() iris.RouterWrapperPolicy {
 	}
 }
 
-func init() {
+func Start(host, port string) {
 	response = Response{}
 
 	app = iris.New()
@@ -135,9 +135,6 @@ func init() {
 		}
 	}
 
-}
-
-func Start(host, port string) {
 	dsn := fmt.Sprintf("%s:%s", host, port)
 	app.Listen(dsn)
 }

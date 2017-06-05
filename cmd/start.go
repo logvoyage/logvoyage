@@ -5,6 +5,7 @@ import (
 
 	"github.com/logvoyage/logvoyage/api"
 	"github.com/logvoyage/logvoyage/consumer"
+	"github.com/logvoyage/logvoyage/models"
 	"github.com/logvoyage/logvoyage/producer"
 	"github.com/spf13/cobra"
 )
@@ -14,6 +15,8 @@ var apiCmd = &cobra.Command{
 	Short: " Starts backend API server",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
+		models.InitDatabase()
+
 		host := cmd.Flags().Lookup("host")
 		port := cmd.Flags().Lookup("port")
 		fmt.Println("Starting API server at port", port.Value)

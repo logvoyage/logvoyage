@@ -13,8 +13,10 @@ import (
 
 var db *gorm.DB
 
-func init() {
-	db = NewConnection()
+func InitDatabase() {
+	if db == nil {
+		db = NewConnection()
+	}
 }
 
 // NewConnection creates new database connection

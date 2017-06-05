@@ -12,6 +12,6 @@ $(APP): $(GO_FILES)
 restart: kill before $(APP)
 	@./logvoyage start api & echo $$! > $(PID)
 test:
-	@LV_MODE=test go test -v
+	@LV_CONFIG=test go test -v
 
 .PHONY: serve restart kill before
