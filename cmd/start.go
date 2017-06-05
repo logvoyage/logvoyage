@@ -16,6 +16,7 @@ var apiCmd = &cobra.Command{
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
 		models.InitDatabase()
+		api.InitRoutes()
 
 		host := cmd.Flags().Lookup("host")
 		port := cmd.Flags().Lookup("port")
