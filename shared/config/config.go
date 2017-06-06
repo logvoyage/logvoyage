@@ -28,6 +28,9 @@ func InitConfig() {
 	cfg.AutomaticEnv()
 	cfg.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
+	// Load custom config file from LV_CONFIG env variable.
+	// E.g.: LV_CONFIG=test logvoyage start api
+	// will try to load config.test.json
 	if len(Get("config")) > 0 {
 		cfg.SetConfigName(fmt.Sprintf("config.%s", Get("config")))
 		err := cfg.ReadInConfig()
