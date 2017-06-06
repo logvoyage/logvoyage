@@ -4,8 +4,15 @@ import (
 	"testing"
 
 	"github.com/logvoyage/logvoyage/models"
+	"github.com/logvoyage/logvoyage/shared/config"
 	"gopkg.in/kataras/iris.v6/httptest"
 )
+
+func init() {
+	config.InitConfig()
+	models.InitDatabase()
+	InitRoutes()
+}
 
 func TestSuccessUsersCreate(t *testing.T) {
 	models.GetConnection().Exec("DELETE FROM users")
