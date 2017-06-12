@@ -28,16 +28,19 @@ func InitConfig() {
 	cfg.AutomaticEnv()
 	cfg.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	// Load custom config file from LV_CONFIG env variable.
-	// E.g.: LV_CONFIG=test logvoyage start api
+	// Get custom config file name from LV_CONFIG env variable.
+	// E.g: LV_CONFIG=test logvoyage start api
 	// will try to load config.test.json
 	if len(Get("config")) > 0 {
 		cfg.SetConfigName(fmt.Sprintf("config.%s", Get("config")))
-		err := cfg.ReadInConfig()
-		if err != nil {
-			fmt.Println("Error reading config:", err)
-			os.Exit(-1)
-		}
+	} else {
+		cfg.SetConfigName("config")
+	}
+
+	err := cfg.ReadInConfig()
+	if err != nil {
+		fmt.Println("Error reading config:", err)
+		os.Exit(-1)
 	}
 }
 
