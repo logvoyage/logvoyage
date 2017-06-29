@@ -18,6 +18,7 @@ var apiCmd = &cobra.Command{
 		models.InitDatabase()
 		api.InitRoutes()
 
+		// TODO: Move to config.file
 		host := cmd.Flags().Lookup("host")
 		port := cmd.Flags().Lookup("port")
 		fmt.Println("Starting API server at port", port.Value)
