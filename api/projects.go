@@ -4,118 +4,106 @@ import (
 	"github.com/logvoyage/logvoyage/elastic"
 	"github.com/logvoyage/logvoyage/models"
 
-	validation "github.com/go-ozzo/ozzo-validation"
-	iris "gopkg.in/kataras/iris.v6"
+	"gopkg.in/gin-gonic/gin.v1"
 )
 
 type projectData struct {
-	Name string
+	Name string `form:"name" json:"name" binding:"required"`
 }
 
-func (p projectData) Validate() error {
-	return validation.ValidateStruct(&p,
-		validation.Field(&p.Name, validation.Required, validation.Length(1, 30)),
-	)
-}
-
-func projectsIndex(ctx *iris.Context) {
-	user := ctx.Get("user").(*models.User)
+func projectsIndex(c *gin.Context) {
+	user := c.MustGet("user").(*models.User)
 	projects, res := models.FindAllProjectsByUser(user)
 
 	if res.Error != nil {
-		response.Panic(ctx, res.Error)
+		response.Panic(c, res.Error)
 		return
 	}
 
-	response.Success(ctx, projects)
+	response.Success(c, projects)
 }
 
-func projectsCreate(ctx *iris.Context) {
-	var data projectData
-	ctx.ReadJSON(&data)
-
-	err := data.Validate()
-
+func projectsCreate(c *gin.Context) {
+	var json projectData
+	err := c.BindJSON(&json)
 	if err != nil {
-		response.Error(ctx, err)
+		response.Error(c, err)
 		return
 	}
 
-	project, res := models.CreateProject(data.Name, ctx.Get("user").(*models.User))
+	project, res := models.CreateProject(json.Name, c.MustGet("user").(*models.User))
 
 	if res.Error != nil {
-		response.Panic(ctx, res.Error)
+		response.Panic(c, res.Error)
 		return
 	}
 
-	response.Success(ctx, project)
+	response.Success(c, project)
 }
 
-func projectsUpdate(ctx *iris.Context) {
-	user := ctx.Get("user").(*models.User)
-	id, _ := ctx.ParamInt("id")
+func projectsUpdate(c *gin.Context) {
+	user := c.MustGet("user").(*models.User)
+	id := c.Param("id")
 
 	project, res := models.FindProjectById(id, user)
 
 	if res.Error != nil {
 		if res.RecordNotFound() {
-			response.Error(ctx, "Project not found")
+			response.Error(c, "Project not found")
 		} else {
-			response.Panic(ctx, res.Error)
+			response.Panic(c, res.Error)
 		}
 		return
 	}
 
-	var data projectData
-	ctx.ReadJSON(&data)
-
-	err := data.Validate()
+	var json projectData
+	err := c.BindJSON(json)
 
 	if err != nil {
-		response.Error(ctx, err)
+		response.Error(c, err)
 		return
 	}
 
 	// Assign new attributes
-	project.Name = data.Name
+	project.Name = json.Name
 
 	_, res = models.SaveProject(project)
 
 	if res.Error != nil {
-		response.Panic(ctx, res.Error)
+		response.Panic(c, res.Error)
 		return
 	}
 
-	response.Success(ctx, project)
+	response.Success(c, project)
 }
 
-func projectsLoad(ctx *iris.Context) {
-	user := ctx.Get("user").(*models.User)
-	id, _ := ctx.ParamInt("id")
+func projectsLoad(c *gin.Context) {
+	user := c.MustGet("user").(*models.User)
+	id := c.Param("id")
 	project, res := models.FindProjectById(id, user)
 
 	if res.Error != nil {
 		if res.RecordNotFound() {
-			response.Error(ctx, "Project not found")
+			response.Error(c, "Project not found")
 		} else {
-			response.Panic(ctx, res.Error)
+			response.Panic(c, res.Error)
 		}
 		return
 	}
 
-	response.Success(ctx, project)
+	response.Success(c, project)
 }
 
-func projectsDelete(ctx *iris.Context) {
-	user := ctx.Get("user").(*models.User)
-	id, _ := ctx.ParamInt("id")
+func projectsDelete(c *gin.Context) {
+	user := c.MustGet("user").(*models.User)
+	id := c.Param("id")
 	project, res := models.FindProjectById(id, user)
 
 	if res.Error != nil {
 		if res.RecordNotFound() {
-			response.Error(ctx, "Project not found")
+			response.Error(c, "Project not found")
 		} else {
-			response.Panic(ctx, res.Error)
+			response.Panic(c, res.Error)
 		}
 		return
 	}
@@ -123,11 +111,11 @@ func projectsDelete(ctx *iris.Context) {
 	res = models.DeleteProject(project)
 
 	if res.Error != nil {
-		response.Panic(ctx, res.Error)
+		response.Panic(c, res.Error)
 		return
 	}
 
-	response.Success(ctx)
+	response.Success(c)
 }
 
 type searchQuery struct {
@@ -137,24 +125,24 @@ type searchQuery struct {
 }
 
 // Search log records in ElasticSearch.
-func projectsLogs(ctx *iris.Context) {
+func projectsLogs(c *gin.Context) {
 	var query searchQuery
-	err := ctx.ReadJSON(&query)
+	err := c.BindJSON(&query)
 
 	if err != nil {
-		response.Error(ctx, "Error parsing request body")
+		response.Error(c, "Error parsing request body")
 		return
 	}
 
-	user := ctx.Get("user").(*models.User)
-	id, _ := ctx.ParamInt("id")
+	user := c.MustGet("user").(*models.User)
+	id := c.Param("id")
 	project, res := models.FindProjectById(id, user)
 
 	if res.Error != nil {
 		if res.RecordNotFound() {
-			response.Error(ctx, "Project not found")
+			response.Error(c, "Project not found")
 		} else {
-			response.Panic(ctx, res.Error)
+			response.Panic(c, res.Error)
 		}
 		return
 	}
@@ -162,17 +150,17 @@ func projectsLogs(ctx *iris.Context) {
 	logs, err := elastic.SearchLogs(user, project, query.Types, query.Query, query.Page)
 
 	if err != nil {
-		response.Panic(ctx, err)
+		response.Panic(c, err)
 		return
 	}
 
-	response.Success(ctx, logs)
+	response.Success(c, logs)
 }
 
-func projectsTypes(ctx *iris.Context) {
-	user := ctx.Get("user").(*models.User)
-	id, _ := ctx.ParamInt("id")
+func projectsTypes(c *gin.Context) {
+	user := c.MustGet("user").(*models.User)
+	id := c.Param("id")
 	project, _ := models.FindProjectById(id, user)
 	types := elastic.GetIndexTypes(project)
-	response.Success(ctx, types)
+	response.Success(c, types)
 }

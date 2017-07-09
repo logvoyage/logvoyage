@@ -7,31 +7,27 @@ import (
 	"github.com/logvoyage/logvoyage/shared/config"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/go-ozzo/ozzo-validation"
-	"github.com/go-ozzo/ozzo-validation/is"
 	"golang.org/x/crypto/bcrypt"
-	"gopkg.in/kataras/iris.v6"
+	"gopkg.in/gin-gonic/gin.v1"
 )
 
 type userData struct {
-	Email    string `json:"email"`
-	Name     string `json:"name"`
-	Password string `json:"password"`
+	Email    string `form:"email" json:"email" binding:"required,email"`
+	Name     string `form:"name" json:"name" binding:"required"`
+	Password string `form:"password" json:"password" binding:"required"`
 }
 
-func (u userData) Validate() error {
-	return validation.ValidateStruct(&u,
-		validation.Field(&u.Email, validation.Required, is.Email),
-		validation.Field(&u.Name, validation.Required, validation.Length(3, 255)),
-		validation.Field(&u.Password, validation.Required, validation.Length(5, 255)),
-	)
-}
+// func (u userData) Validate() error {
+// 	return validation.ValidateStruct(&u,
+// 		validation.Field(&u.Email, validation.Required, is.Email),
+// 		validation.Field(&u.Name, validation.Required, validation.Length(3, 255)),
+// 		validation.Field(&u.Password, validation.Required, validation.Length(5, 255)),
+// 	)
+// }
 
-func UsersCreate(ctx *iris.Context) {
+func UsersCreate(ctx *gin.Context) {
 	var data userData
-	ctx.ReadJSON(&data)
-
-	err := data.Validate()
+	err := ctx.BindJSON(&data)
 
 	if err != nil {
 		response.Error(ctx, err)
@@ -60,9 +56,9 @@ func UsersCreate(ctx *iris.Context) {
 	response.Success(ctx)
 }
 
-func UsersLogin(ctx *iris.Context) {
+func UsersLogin(ctx *gin.Context) {
 	var data userData
-	ctx.ReadJSON(&data)
+	err := ctx.BindJSON(&data)
 
 	user, res := models.FindUserByEmail(data.Email)
 
@@ -75,7 +71,7 @@ func UsersLogin(ctx *iris.Context) {
 		return
 	}
 
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password))
 
 	if err != nil {
 		response.Error(ctx, "User not found")
