@@ -51,7 +51,7 @@ func FindProjectByUUID(uuid string) (*Project, *gorm.DB) {
 	return &p, res
 }
 
-func FindProjectById(id int, u *User) (*Project, *gorm.DB) {
+func FindProjectById(id interface{}, u *User) (*Project, *gorm.DB) {
 	var p Project
 	res := db.Model(&p).Where("id = ? AND owner_id = ?", id, u.ID).First(&p)
 	return &p, res

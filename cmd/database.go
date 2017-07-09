@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/logvoyage/logvoyage/models"
 	"github.com/logvoyage/logvoyage/models/migrations"
 	"github.com/logvoyage/logvoyage/shared/config"
 
@@ -42,6 +43,7 @@ var migrateCmd = &cobra.Command{
 	Short: "Apply database migrations",
 	Long:  "Apply database migrations",
 	Run: func(cmd *cobra.Command, args []string) {
+		models.InitDatabase()
 		migrations.Migrate()
 	},
 }
