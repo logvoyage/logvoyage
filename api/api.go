@@ -108,7 +108,6 @@ func InitRoutes() {
 	response = Response{}
 
 	app = gin.Default()
-	nt
 	app.Use(corsMiddleware())
 
 	root := app.Group("/api")

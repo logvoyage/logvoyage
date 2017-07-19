@@ -11,22 +11,19 @@ import (
 	"gopkg.in/gin-gonic/gin.v1"
 )
 
-type userData struct {
+type newUserData struct {
 	Email    string `form:"email" json:"email" binding:"required,email"`
 	Name     string `form:"name" json:"name" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
 }
 
-// func (u userData) Validate() error {
-// 	return validation.ValidateStruct(&u,
-// 		validation.Field(&u.Email, validation.Required, is.Email),
-// 		validation.Field(&u.Name, validation.Required, validation.Length(3, 255)),
-// 		validation.Field(&u.Password, validation.Required, validation.Length(5, 255)),
-// 	)
-// }
+type loginData struct {
+	Email    string `form:"email" json:"email" binding:"required,email"`
+	Password string `form:"password" json:"password" binding:"required"`
+}
 
 func UsersCreate(ctx *gin.Context) {
-	var data userData
+	var data newUserData
 	err := ctx.BindJSON(&data)
 
 	if err != nil {
@@ -57,7 +54,7 @@ func UsersCreate(ctx *gin.Context) {
 }
 
 func UsersLogin(ctx *gin.Context) {
-	var data userData
+	var data loginData
 	err := ctx.BindJSON(&data)
 
 	user, res := models.FindUserByEmail(data.Email)
