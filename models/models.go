@@ -30,11 +30,9 @@ func NewConnection() *gorm.DB {
 		config.Get("db.sslmode"),
 		config.Get("db.password"),
 	)
-	println(dsn)
-	// TODO: Add connection timeout
 	db, err := gorm.Open("postgres", dsn)
 	if err != nil {
-		log.Println("Database connection error:", err)
+		log.Fatalln("Database connection error:", err)
 	}
 	db.LogMode(true)
 	return db
